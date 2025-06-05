@@ -1,0 +1,546 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dooing.Task</title>
+  <link rel="stylesheet" href="/src/project/styles/dooing-main.css">
+  
+</head>
+
+<body class="content-container">
+  <header class="header">
+    <!-- Left section: Logo + Tagline -->
+    <div class="header-left">
+      <div class="header-logo">
+        <a href="#home" aria-label="Home">
+          <!-- redesign the logo-->
+          <img src="../assets/logo.png" alt="Dooing.Task Logo">
+        </a>
+      </div>
+      <p class="header-text">A Sensible Planner</p>
+    </div>
+
+    <!-- Center section: Date + Arrow Navigation -->
+    <div class="header-center">
+      <button id="left-arrow-btn" class="arrow-btn" aria-label="Previous Category"><img src="/src/assets/icons/arrow-left-square-svgrepo-com.svg" alt="Left Arrow"></button>
+      <!-- Current Date Display  -->
+      <div class="current-date" id="current-date">
+        <span id="current-date-text">Jun 2025</span>
+      </div>
+      <button id="right-arrow-btn" class="arrow-btn" aria-label="Next Category"><img src="/src/assets/icons/arrow-right-square-svgrepo-com.svg" alt="Right Arrow"></button>
+      <label for="theme-toggle">Theme:</label>
+      <select id="theme-selector" aria-label="Select theme"></select>
+      <button id="new-task-btn" class="new-task-btn" aria-label="New Task"><img src="/src/assets/icons/todo-add-svgrepo-com.svg" alt="New Task"></button>
+    </div>
+
+    <!-- Right section: Action Buttons -->
+    <div class="header-right">
+     
+      <button class="sidebar" aria-label="Toggle menu" type="button">
+       <span class="hamburger-bar"></span>
+       <span class="hamburger-bar"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Sidebar Navigation Menu -->
+  <aside class="sidebar-menu" id="sidebar" aria-label="Sidebar Navigation">
+    <div class="sidebar-header">
+      <button class="sidebar-close" aria-label="Close menu" type="button">
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+      </button>
+    </div>
+
+    <!-- Nav Link Sidebar, drops down from bottom of the header container -->
+
+    <nav class="sidebar-nav">
+      <!-- Sidebar Actions -->
+      <div class="sidebar-actions">
+        <button id="settings-btn" class="settings-btn">Settings</button>
+        <button id="help-btn" class="help-btn">Help</button>
+      </div>
+      <!-- Navigation links -->
+      <ul class="sidebar-nav-list">
+        <li class="sidebar-nav-item">
+          <a href="#task-list" class="sidebar-nav-link">
+            <span class="nav-dot"></span>
+            <span class="nav-text">Tasks</span>
+          </a>
+        </li>
+        <li class="sidebar-nav-item">
+          <a href="#pomodoro" class="sidebar-nav-link">
+            <span class="nav-dot"></span>
+            <span class="nav-text">Pomodoro</span>
+          </a>
+        </li>
+        <li class="sidebar-nav-item">
+          <a href="#inspo" class="sidebar-nav-link">
+            <span class="nav-dot"></span>
+            <span class="nav-text">Inspo</span>
+          </a>
+        </li>
+        <li class="sidebar-nav-item">
+          <a href="#about" class="sidebar-nav-link">
+            <span class="nav-dot"></span>
+            <span class="nav-text">About</span>
+          </a>
+        </li>
+        <li class="sidebar-nav-item">
+          <a href="#contact" class="sidebar-nav-link">
+            <span class="nav-dot"></span>
+            <span class="nav-text">Contact</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <section class="hero-section">
+
+    <div class="hero-content">
+      <h1 id="hero-category" class="hero-category">Today</h1>
+
+      <!-- Category indicator dots -->
+      <div class="category-indicator" id="category-indicator">
+        <!-- Category dots will be dynamically generated -->
+      </div>
+
+      <!-- Keyboard shortcut tip -->
+      <div class="keyboard-tip">
+        <small>Use <kbd>←</kbd> <kbd>→</kbd> arrow keys to navigate between categories</small>
+      </div>
+    </div>
+
+
+    <!-- Implement quote ticker with random quote picker as well-->
+    <div class="quote-ticker" aria-live="polite">
+      <p class="quote" p id="quote-text">"The best way to predict the future is to create it." - Peter Drucker</p>
+    </div>
+
+    </div>
+  </section>
+  <main class="main-container">
+
+    <div class="task-categories-container">
+
+      <!-- Today Tasks -->
+      <section class="task-category today-category active" id="today-section" data-category="today">
+        <header class="category-header">
+          <h2 class="category-title">Today</h2>
+          <span class="task-count" id="today-count">0 tasks</span>
+        </header>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="today-empty">
+          <div class="empty-icon">📋</div>
+          <h3 class="empty-title">No tasks for today</h3>
+          <p class="empty-message">Either start your day or take a break</p>
+          <button class="add-task-btn" data-category="today">Add Task</button>
+        </div>
+
+        <!-- Tasks List -->
+        <div class="tasks-container" id="today-tasks" style="display: none;">
+          <ul class="tasks-list" id="today-tasks-list">
+            <!-- Task items will be dynamically inserted here -->
+          </ul>
+        </div>
+      </section>
+
+      <!-- Tomorrow Tasks -->
+      <section class="task-category tomorrow-category" id="tomorrow-section" data-category="tomorrow">
+        <header class="category-header">
+          <h2 class="category-title">Tomorrow</h2>
+          <span class="task-count" id="tomorrow-count">0 tasks</span>
+        </header>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="tomorrow-empty">
+          <div class="empty-icon">📅</div>
+          <h3 class="empty-title">No tasks for tomorrow</h3>
+          <p class="empty-message">Plan ahead and stay organized</p>
+          <button class="add-task-btn" data-category="tomorrow">Add Task</button>
+        </div>
+
+        <!-- Tasks List -->
+        <div class="tasks-container" id="tomorrow-tasks" style="display: none;">
+          <ul class="tasks-list" id="tomorrow-tasks-list">
+            <!-- Task items will be dynamically inserted here -->
+          </ul>
+        </div>
+      </section>
+
+      <!-- Future Tasks -->
+      <section class="task-category future-category" id="future-section" data-category="future">
+        <header class="category-header">
+          <h2 class="category-title">Future</h2>
+          <div class="future-controls">
+            <button class="view-toggle active" id="week-view-btn" data-view="week">Week</button>
+            <button class="view-toggle" id="month-view-btn" data-view="month">Month</button>
+          </div>
+        </header>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="future-empty">
+          <div class="empty-icon">🗓️</div>
+          <h3 class="empty-title">No future tasks scheduled</h3>
+          <p class="empty-message">Schedule tasks for upcoming days</p>
+          <button class="add-task-btn" data-category="future">Add Task</button>
+        </div>
+
+        <!-- Week Calendar View -->
+        <div class="calendar-container week-view active" id="week-calendar">
+          <div class="calendar-header">
+            <button class="calendar-nav" id="prev-week" aria-label="Previous week">&lt;</button>
+            <h3 class="calendar-title" id="week-title">June 2-8, 2025</h3>
+            <button class="calendar-nav" id="next-week" aria-label="Next week">&gt;</button>
+          </div>
+          <div class="week-grid">
+            <div class="week-day" data-date="2025-06-02">
+              <div class="day-header">
+                <span class="day-name">Mon</span>
+                <span class="day-number">2</span>
+              </div>
+              <div class="day-tasks">
+                <!-- Tasks for this day will be inserted here -->
+              </div>
+            </div>
+            <div class="week-day" data-date="2025-06-03">
+              <div class="day-header">
+                <span class="day-name">Tue</span>
+                <span class="day-number">3</span>
+              </div>
+              <div class="day-tasks">
+                <!-- Tasks for this day will be inserted here -->
+              </div>
+            </div>
+            <div class="week-day" data-date="2025-06-04">
+              <div class="day-header">
+                <span class="day-name">Wed</span>
+                <span class="day-number">4</span>
+              </div>
+              <div class="day-tasks">
+                <!-- Tasks for this day will be inserted here -->
+              </div>
+            </div>
+            <div class="week-day" data-date="2025-06-05">
+              <div class="day-header">
+                <span class="day-name">Thu</span>
+                <span class="day-number">5</span>
+              </div>
+              <div class="day-tasks">
+                <!-- Tasks for this day will be inserted here -->
+              </div>
+            </div>
+            <div class="week-day" data-date="2025-06-06">
+              <div class="day-header">
+                <span class="day-name">Fri</span>
+                <span class="day-number">6</span>
+              </div>
+              <div class="day-tasks">
+                <!-- Tasks for this day will be inserted here -->
+              </div>
+            </div>
+            <div class="week-day" data-date="2025-06-07">
+              <div class="day-header">
+                <span class="day-name">Sat</span>
+                <span class="day-number">7</span>
+              </div>
+              <div class="day-tasks">
+                <!-- Tasks for this day will be inserted here -->
+              </div>
+            </div>
+            <div class="week-day" data-date="2025-06-08">
+              <div class="day-header">
+                <span class="day-name">Sun</span>
+                <span class="day-number">8</span>
+              </div>
+              <div class="day-tasks">
+                <!-- Tasks for this day will be inserted here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Month Calendar View -->
+        <div class="calendar-container month-view" id="month-calendar" style="display: none;">
+          <div class="calendar-header">
+            <button class="calendar-nav" id="prev-month" aria-label="Previous month">&lt;</button>
+            <h3 class="calendar-title" id="month-title">June 2025</h3>
+            <button class="calendar-nav" id="next-month" aria-label="Next month">&gt;</button>
+          </div>
+          <div class="month-grid">
+            <div class="month-day-names">
+              <span class="day-name">Sun</span>
+              <span class="day-name">Mon</span>
+              <span class="day-name">Tue</span>
+              <span class="day-name">Wed</span>
+              <span class="day-name">Thu</span>
+              <span class="day-name">Fri</span>
+              <span class="day-name">Sat</span>
+            </div>
+            <div class="month-days" id="month-days-grid">
+              <!-- Month days will be dynamically generated -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Task Item Template (hidden, used for JS cloning) -->
+    <template id="task-item-template">
+      <li class="task-item" data-task-id="">
+        <div class="task-content">
+          <button class="task-checkbox" aria-label="Mark as complete">
+            <span class="checkbox-icon"></span>
+          </button>
+          <div class="task-details">
+            <h4 class="task-title"></h4>
+            <p class="task-description"></p>
+            <div class="task-meta">
+              <span class="task-time"></span>
+            </div>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="task-edit-btn" aria-label="Edit task">✏️</button>
+          <button class="task-delete-btn" aria-label="Delete task">🗑️</button>
+        </div>
+      </li>
+    </template>
+
+    <!-- Calendar Task Template -->
+    <template id="calendar-task-template">
+      <div class="calendar-task" data-task-id="">
+        <span class="task-indicator"></span>
+        <span class="task-name"></span>
+      </div>
+    </template>
+    </div>
+  
+
+
+
+    <!-- Work on Phase 2-->
+    <!-- Pomodoro Section -->
+    <section id="pomodoro" class="pomodoro-section" style="display: none;">
+      <h2>Pomodoro Timer</h2>
+      <div class="timer">
+        <span class="timer-display">25:00</span>
+        <div class="timer-controls">
+          <button class="btn" id="startTimer" aria-label="Start timer" type="button">Start/Pause</button>
+          <button class="btn" id="skipTimer" aria-label="Skip timer" type="button">Skip</button>
+          <button class="btn" id="resetTimer" aria-label="Reset timer" type="button">Reset</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Inspiration Section -->
+    <section id="inspo" class="inspo-section" style="display: none;">
+      <h2>Get Inspired</h2>
+      <p>Find motivation and creative ideas to keep you on track.</p>
+      <div class="inspo-content">
+      </div>
+    </section>
+    <!-- About Section -->
+    <section id="about" class="about-section" style="display: none;">
+      <!-- Content will be replaced -->
+      <div class="container"> <!-- Keep container for structure -->
+        <div class="about-content">
+          <h2>About Dooing.Task</h2>
+          <p>Tracking goals and staying productive shouldn't be a task in itself. So we wanted to create a task manager
+            that keeps "you" in the moment. No stat tracking, no task labeling or priority to focus on except for "What
+            you want to do".</p>
+          <p>Dooing.Task is based on 3 principles:</p>
+          <ul>
+            <li><strong>Planning:</strong> Set manageable goals and tasks for yourself by breaking down tasks into
+              smaller, actionable steps. 3 Categories "Today" "Tomorrow" "Future". 6 Tasks Per Day = More Tasks
+              Completed! Manageable and attainable.</li>
+            <li><strong>Attention:</strong> Focus on one task at a time. Use the Pomodoro technique to work in focused
+              sprints with breaks in between.</li>
+            <li><strong>Retention:</strong> Reflect on your progress and achievements. Use the "Completed" section to
+              see what you've accomplished along with the "Inspiration" section to keep you motivated. Save notes, study
+              summaries or other things you want to remember or be inspired by!</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section" style="display: none;">
+      <h2>Contact Us</h2>
+      <!-- TODO: Move contact form HTML from settings.js here -->
+      <form id="contact-form-element" class="contact-form-static">
+        <p>Have a question, feedback or want to work on your site? Get in Touch</p>
+        <div class="form-group">
+          <label for="contact-name-static">Name:</label>
+          <input type="text" id="contact-name-static" name="contact-name" required>
+        </div>
+        <div class="form-group">
+          <label for="contact-email-static">Email:</label>
+          <input type="email" id="contact-email-static" name="contact-email" required>
+        </div>
+        <div class="form-group">
+          <label for="contact-message-static">Message:</label>
+          <textarea id="contact-message-static" name="contact-message" required></textarea>
+        </div>
+        <button type="submit" class="btn">Send Message</button>
+      </form>
+    </section>
+
+    <!-- Settings Section -->
+    <section id="settings" class="settings-section-page" style="display: none;">
+      <h2>Settings</h2>
+      <!-- TODO: Move settings HTML from settings.js here -->
+      <div class="settings-content-static">
+        <section class="settings-options">
+          <h3>Application Settings</h3>
+          <div class="setting-item">
+            <label for="auto-delete-overdue-static">Auto-Delete Overdue Tasks:</label>
+            <input type="checkbox" id="auto-delete-overdue-static" name="auto-delete-overdue" checked>
+          </div>
+          <div class="setting-item">
+            <label for="week-start-day-static">Change Week Start Day:</label>
+            <select id="week-start-day-static" name="week-start-day">
+              <option value="sunday">Sunday</option>
+              <option value="monday">Monday</option>
+            </select>
+          </div>
+          <p><em>Other general settings will be added soon...</em></p>
+
+        </section>
+        <!-- Pomodoro settings from settings.js are extensive and already in the main Pomodoro section. -->
+        <!-- We can add a link here or a note. -->
+        <section class="pomodoro-settings-link">
+          <h3>Pomodoro Settings</h3>
+          <p>Pomodoro timer durations (Focus, Short Break, Long Break) and auto-start options can be configured directly
+            in the <a href="#pomodoro" onclick="showSection('pomodoro'); return false;">Pomodoro section</a>.</p>
+        </section>
+      </div>
+    </section>
+
+    <!-- Help Section -->
+    <section id="help" class="help-section" style="display: none;">
+      <h2>Help & Tutorial</h2>
+      <div class="help-content-static">
+        <p>Welcome to Dooing.Task! Here's a quick guide to get you started:</p>
+        <ul>
+          <li><strong>Task Management:</strong> Add tasks for "Today," "Tomorrow," or a "Future" date. Use the arrow
+            buttons in the header or your keyboard's left/right arrow keys to navigate between these main task
+            categories.</li>
+          <li><strong>Task Cards:</strong> Each task is displayed on a card. You can mark tasks as complete using the
+            checkbox, edit task details, or delete tasks directly from the card.</li>
+          <li><strong>Future View:</strong> In the "Future" tasks category, you can switch between a weekly and a
+            monthly calendar view to see your upcoming tasks.</li>
+          <li><strong>Pomodoro Timer:</strong> Access the Pomodoro timer via the sidebar to work in focused intervals.
+            Customize session durations in the Pomodoro section itself or basic settings here.</li>
+          <li><strong>Inspiration (Inspo):</strong> Find a daily dose of motivation with random quotes in the Inspo
+            section, also accessible from the sidebar.</li>
+          <li><strong>Settings:</strong> Change the application theme and configure other preferences in the <a
+              href="#settings" onclick="showSection('settings'); return false;">Settings section</a>.</li>
+          <li><strong>Navigation:</strong> Use the sidebar (hamburger menu) to easily jump between different sections of
+            the application like Tasks, Pomodoro, Inspo, About, Contact, Settings, and Help.</li>
+        </ul>
+        <p><em>More detailed tutorials, FAQs, and keyboard shortcut guides will be added soon. If you have any
+            questions, feel free to reach out via the Contact section!</em></p>
+      </div>
+    </section>
+
+  </main>
+  <!-- Task Form Modal -->
+  <!--Modal drops down from the bottom of the header container-->
+  <div id="task-modal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Dooing.Task</h2>
+        <button id="close-modal" aria-label="Close modal" type="button">&times;</button>
+      </div>
+
+      <form id="task-form" class="task-form">
+        <div class="form-group">
+          <label for="task-name">Task Name</label>
+          <input type="text" id="task-name" name="name" aria-describedby="name-help" required
+            placeholder="What we working on?">
+        </div>
+        <div class="form-group">
+          <label for="task-desc">Description</label>
+          <textarea id="task-desc" name="description" placeholder="Task details..."></textarea>
+        </div>
+        <div class="form-group">
+          <fieldset>
+            <legend>Category:</legend>
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="category" value="today" checked> Today</label>
+              <label>
+                <input type="radio" name="category" value="tomorrow"> Tomorrow</label>
+              <label>
+                <input type="radio" name="category" value="future"> Future</label>
+            </div>
+          </fieldset>
+          <div class="future-date-input" id="future-date-group" style="display: none;">
+            <label for="task-date">Select Date:</label>
+            <input type="date" id="task-date" name="date">
+          </div>
+          <!-- Recurrence section -->
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="recurring-task" name="recurring">
+              Repeat this task
+            </label>
+
+            <div class="recurrence-options" id="recurrence-options" style="display: none;">
+              <div class="radio-group">
+
+                <label>
+                  <input type="radio" id="recurrence" name="recurrence-type" value="daily" checked>
+                  Daily
+                </label>
+
+                <label>
+                  <input type="radio" id="recurrence" name="recurrence-type" value="weekly">
+                  Weekly
+                </label>
+
+                <label>
+                  <input type="radio" id="recurrence" name="recurrence-type" value="monthly">
+                  Monthly
+                </label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-primary">
+            <span id="submit-text">Add Task</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer Section -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-links">
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+      <p class="copyright">© 2025 Dooing.Task - A Sensible Planner</p>
+    </div>
+  </footer>
+
+
+
+  <!-- JavaScript -->
+
+</body>
+
+</html>
