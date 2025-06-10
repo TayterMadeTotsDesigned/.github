@@ -49,7 +49,8 @@ const TaskManager = {
         };
         
         const categorized = this.categorizeTasks();
-        return categorized[category].length < limits[category];
+        const currentCount = categorized[category] ? categorized[category].length : 0;
+        return currentCount < limits[category];
     },
     
     validateTaskAddition(category) {
@@ -77,6 +78,14 @@ const TaskManager = {
         Storage.saveTasks(this.tasks);
         return task;
     },
+    
+    getTasks(filterFn) {
+        if (filterFn) {
+            return this.tasks.filter(filterFn);
+        }
+        return this.tasks;
+    },
+    
     deleteTask(id){
         this.tasks = this.tasks.filter(t => t.id != id);
         Storage.saveTasks(this.tasks);

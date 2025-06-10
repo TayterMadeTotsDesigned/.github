@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dooing.Task</title>
-  <link rel="stylesheet" href="/src/project/styles/dooing-main.css">
+  <link rel="stylesheet" href="styles/dooing-main.css">
+  <link rel="stylesheet" href="styles/sidebar.css">
   
 </head>
 
@@ -15,7 +16,7 @@
       <div class="header-logo">
         <a href="#home" aria-label="Home">
           <!-- redesign the logo-->
-          <img src="../assets/logo.png" alt="Dooing.Task Logo">
+          <img src="scripts/svg/Dooing-logo-2.svg" alt="Dooing.Task Logo">
         </a>
       </div>
       <p class="header-text">A Sensible Planner</p>
@@ -23,15 +24,21 @@
 
     <!-- Center section: Date + Arrow Navigation -->
     <div class="header-center">
-      <button id="left-arrow-btn" class="arrow-btn" aria-label="Previous Category"><img src="/src/assets/icons/arrow-left-square-svgrepo-com.svg" alt="Left Arrow"></button>
+      <button id="left-arrow-btn" class="arrow-btn" aria-label="Previous Category">
+        <img src="scripts/svg/arrow-left-square-svgrepo-com.svg" alt="Previous">
+      </button>
       <!-- Current Date Display  -->
       <div class="current-date" id="current-date">
         <span id="current-date-text">Jun 2025</span>
       </div>
-      <button id="right-arrow-btn" class="arrow-btn" aria-label="Next Category"><img src="/src/assets/icons/arrow-right-square-svgrepo-com.svg" alt="Right Arrow"></button>
-      <label for="theme-toggle">Theme:</label>
+      <button id="right-arrow-btn" class="arrow-btn" aria-label="Next Category">
+        <img src="scripts/svg/arrow-right-square-svgrepo-com.svg" alt="Next">
+      </button>
+      <label for="theme-selector">Theme:</label>
       <select id="theme-selector" aria-label="Select theme"></select>
-      <button id="new-task-btn" class="new-task-btn" aria-label="New Task"><img src="/src/assets/icons/todo-add-svgrepo-com.svg" alt="New Task"></button>
+      <button id="new-task-btn" class="new-task-btn" aria-label="New Task">
+        <img src="scripts/svg/task-done-svgrepo-com.svg" alt="Add Task">
+      </button>
     </div>
 
     <!-- Right section: Action Buttons -->
@@ -43,6 +50,9 @@
       </button>
     </div>
   </header>
+
+  <!-- Sidebar Backdrop -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
   <!-- Sidebar Navigation Menu -->
   <aside class="sidebar-menu" id="sidebar" aria-label="Sidebar Navigation">
@@ -134,7 +144,7 @@
 
         <!-- Empty State -->
         <div class="empty-state" id="today-empty">
-          <div class="empty-icon">📋</div>
+          <div class="empty-icon"><img src="scripts/svg/elephant-svgrepo-com.svg" alt="No tasks"></div>
           <h3 class="empty-title">No tasks for today</h3>
           <p class="empty-message">Either start your day or take a break</p>
           <button class="add-task-btn" data-category="today">Add Task</button>
@@ -157,9 +167,9 @@
 
         <!-- Empty State -->
         <div class="empty-state" id="tomorrow-empty">
-          <div class="empty-icon">📅</div>
+          <div class="empty-icon"><img src="scripts/svg/giraffe-svgrepo-com.svg" alt="No tasks"></div>
           <h3 class="empty-title">No tasks for tomorrow</h3>
-          <p class="empty-message">Plan ahead and stay organized</p>
+          <p class="empty-message">Plan and Look ahead.. stay organized</p>
           <button class="add-task-btn" data-category="tomorrow">Add Task</button>
         </div>
 
@@ -183,9 +193,9 @@
 
         <!-- Empty State -->
         <div class="empty-state" id="future-empty">
-          <div class="empty-icon">🗓️</div>
+          <div class="empty-icon"><img src="scripts/svg/bee-svgrepo-com.svg" alt="No tasks"></div>
           <h3 class="empty-title">No future tasks scheduled</h3>
-          <p class="empty-message">Schedule tasks for upcoming days</p>
+          <p class="empty-message">Beesyschedule... plan tasks for the upcoming days</p>
           <button class="add-task-btn" data-category="future">Add Task</button>
         </div>
 
@@ -515,7 +525,7 @@
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn btn-primary">
+          <button type="submit" class="btn btn-primary">
             <span id="submit-text">Add Task</span>
           </button>
         </div>
@@ -540,6 +550,7 @@
 
 
   <!-- JavaScript -->
+  <script type="module" src="scripts/app.js"></script>
 
 </body>
 
