@@ -3,6 +3,7 @@ import TaskManager from './taskManager.js';
 import Storage from './storage.js';
 import { UIRenderer } from './UI_Renderer.js';
 import { generateId, getToday, formatDate } from './utils.js';
+import PomodoroTimer from './pomodoro.js';
 
 const App = {
     currentCategory: 'today',
@@ -12,6 +13,10 @@ const App = {
         this.tasks = TaskManager.getTasks();
         this.settings = Storage.loadSettings();
         
+        // Initialize Pomodoro Timer
+        this.pomodoroTimer = new PomodoroTimer();
+        window.pomodoroTimer = this.pomodoroTimer; // Make accessible globally for modal callbacks
+        
         // Set up event listeners
         this.bindEvents();
         
@@ -20,6 +25,14 @@ const App = {
         
         // Render initial UI
         this.renderUI();
+        
+        // Make sure Pomodoro section is visible on startup
+        const pomodoroSection = document.getElementById('pomodoro');
+        if (pomodoroSection) {
+            pomodoroSection.style.display = 'block';
+            this.pomodoroTimer.initializeSettingsUI();
+            this.updatePomodoroTaskList();
+        }
     },
 
     bindEvents() {
@@ -167,6 +180,12 @@ const App = {
         const nextIndex = (currentIndex + direction + categories.length) % categories.length;
         
         this.switchCategory(categories[nextIndex]);
+        
+        // Make sure Pomodoro is still visible after navigation
+        const pomodoroSection = document.getElementById('pomodoro');
+        if (pomodoroSection) {
+            pomodoroSection.style.display = 'block';
+        }
     },
 
     switchCategory(category) {
@@ -177,6 +196,9 @@ const App = {
         
         // Show selected category
         document.getElementById(`${category}-section`).classList.add('active');
+        
+        // Always show the pomodoro section
+        document.getElementById('pomodoro').style.display = 'block';
         
         // Update current category
         this.currentCategory = category;
@@ -310,7 +332,13 @@ const App = {
                 this.focusOnTaskList();
                 break;
             case '#pomodoro':
-                this.showNotification('Pomodoro timer coming soon!', 'info');
+                // Show pomodoro section and ensure it's visible
+                const pomodoroSection = document.getElementById('pomodoro');
+                if (pomodoroSection) {
+                    pomodoroSection.style.display = 'block';
+                    this.pomodoroTimer.initializeSettingsUI();
+                    this.updatePomodoroTaskList();
+                }
                 break;
             case '#inspo':
                 this.showNotification('Inspiration section coming soon!', 'info');
@@ -332,6 +360,33 @@ const App = {
         if (taskSection) {
             taskSection.scrollIntoView({ behavior: 'smooth' });
         }
+    },
+
+    showSection(sectionId) {
+        // For the Pomodoro section, we want to keep it visible alongside task categories
+        if (sectionId === 'pomodoro') {
+            // Show the Pomodoro section
+            const pomodoroSection = document.getElementById('pomodoro');
+            if (pomodoroSection) {
+                pomodoroSection.style.display = 'block';
+                this.pomodoroTimer.initializeSettingsUI();
+                this.updatePomodoroTaskList();
+            }
+        } else {
+            // For other sections, hide all non-task sections except Pomodoro
+            document.querySelectorAll('section:not(.task-category):not(#pomodoro)').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show the requested section
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = 'block';
+            }
+        }
+        
+        // Close the sidebar
+        this.closeSidebar();
     },
 
     showSettings() {
@@ -391,7 +446,14 @@ const App = {
                 const dot = document.createElement('div');
                 dot.className = `category-dot ${index === 0 ? 'active' : ''}`;
                 dot.dataset.category = category;
-                dot.addEventListener('click', () => this.switchCategory(category));
+                dot.addEventListener('click', () => {
+                    this.switchCategory(category);
+                    // Make sure Pomodoro is still visible
+                    const pomodoroSection = document.getElementById('pomodoro');
+                    if (pomodoroSection) {
+                        pomodoroSection.style.display = 'block';
+                    }
+                });
                 container.appendChild(dot);
             });
         }
@@ -705,8 +767,51 @@ const App = {
         });
         
         return dayEl;
+    },
+
+    updatePomodoroTaskList() {
+        const todayTasks = TaskManager.getTasksByCategory('today');
+        const taskList = document.getElementById('pomodoro-task-list');
+        
+        if (!taskList) return;
+        
+        if (todayTasks.length === 0) {
+            taskList.innerHTML = `
+                <li class="active-task-item">
+                    <span class="task-title">No tasks for today. Add some tasks to get started!</span>
+                </li>
+            `;
+            return;
+        }
+        
+        taskList.innerHTML = '';
+        todayTasks.forEach((task, index) => {
+            const li = document.createElement('li');
+            li.className = 'active-task-item';
+            li.innerHTML = `
+                <input type="checkbox" class="task-checkbox" id="pomodoro-task-${task.id}" 
+                       ${task.completed ? 'checked' : ''}>
+                <label for="pomodoro-task-${task.id}" class="task-title ${task.completed ? 'completed' : ''}">
+                    ${task.title}
+                </label>
+            `;
+            
+            // Add event listener for task completion
+            const checkbox = li.querySelector('input');
+            checkbox.addEventListener('change', (e) => {
+                task.completed = e.target.checked;
+                TaskManager.updateTask(task);
+                this.updatePomodoroTaskList();
+                this.renderUI(); // Update main task view
+            });
+            
+            taskList.appendChild(li);
+        });
     }
 };
 
 // Initialize the app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => App.init());
+document.addEventListener('DOMContentLoaded', () => {
+    App.init();
+    window.App = App; // Make App globally accessible
+});

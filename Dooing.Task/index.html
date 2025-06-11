@@ -6,6 +6,7 @@
   <title>Dooing.Task</title>
   <link rel="stylesheet" href="styles/dooing-main.css">
   <link rel="stylesheet" href="styles/sidebar.css">
+  <link rel="stylesheet" href="styles/pomodoro.css">
   
 </head>
 
@@ -332,19 +333,164 @@
 
 
 
-    <!-- Work on Phase 2-->
     <!-- Pomodoro Section -->
-    <section id="pomodoro" class="pomodoro-section" style="display: none;">
+    <section id="pomodoro" class="pomodoro-section">
       <h2>Pomodoro Timer</h2>
-      <div class="timer">
-        <span class="timer-display">25:00</span>
-        <div class="timer-controls">
-          <button class="btn" id="startTimer" aria-label="Start timer" type="button">Start/Pause</button>
-          <button class="btn" id="skipTimer" aria-label="Skip timer" type="button">Skip</button>
-          <button class="btn" id="resetTimer" aria-label="Reset timer" type="button">Reset</button>
+      
+      <!-- Timer Display -->
+      <div class="pomodoro-timer-container">
+        <div class="pomodoro-timer-circle">
+          <svg class="pomodoro-progress-svg" viewBox="0 0 100 100">
+            <circle class="pomodoro-progress-bg" cx="50" cy="50" r="45"></circle>
+            <circle class="pomodoro-progress-circle" cx="50" cy="50" r="45"></circle>
+          </svg>
+          <div class="pomodoro-timer-display" id="pomodoro-timer-display">25:00</div>
+        </div>
+        
+        <div class="pomodoro-session-info">
+          <div class="session-type focus" id="pomodoro-session-type">Focus</div>
+          <div class="session-counter" id="pomodoro-session-counter">Session 1 of 4</div>
+        </div>
+      </div>
+      
+      <!-- Timer Controls -->
+      <div class="pomodoro-controls">
+        <button class="pomodoro-btn primary" id="pomodoro-start-pause" aria-label="Start/Pause timer">
+          <span>▶ Start</span>
+        </button>
+        <button class="pomodoro-btn" id="pomodoro-reset" aria-label="Reset timer">
+          <span>↻ Reset</span>
+        </button>
+        <button class="pomodoro-btn" id="pomodoro-skip" aria-label="Skip session">
+          <span>⏭ Skip</span>
+        </button>
+      </div>
+      
+      <!-- Active Tasks Integration -->
+      <div class="pomodoro-active-tasks">
+        <h4>Today's Tasks</h4>
+        <ul class="active-task-list" id="pomodoro-task-list">
+          <li class="active-task-item">
+            <input type="checkbox" class="task-checkbox" id="task-1">
+            <label for="task-1" class="task-title">No tasks for today. Add some tasks to get started!</label>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Timer Settings -->
+      <div class="pomodoro-settings">
+        <h3>Timer Settings</h3>
+        <div class="settings-grid">
+          <div class="setting-group">
+            <div class="setting-item">
+              <label class="setting-label" for="focus-duration">
+                Focus Duration
+                <span class="setting-value" id="focus-value">25</span> minutes
+              </label>
+              <input type="range" id="focus-duration" class="pomodoro-slider" 
+                     min="15" max="90" step="5" value="25">
+            </div>
+            
+            <div class="setting-item">
+              <label class="setting-label" for="short-break-duration">
+                Short Break Duration
+                <span class="setting-value" id="short-break-value">5</span> minutes
+              </label>
+              <input type="range" id="short-break-duration" class="pomodoro-slider" 
+                     min="5" max="35" step="5" value="5">
+            </div>
+            
+            <div class="setting-item">
+              <label class="setting-label" for="long-break-duration">
+                Long Break Duration
+                <span class="setting-value" id="long-break-value">15</span> minutes
+              </label>
+              <input type="range" id="long-break-duration" class="pomodoro-slider" 
+                     min="10" max="45" step="5" value="15">
+            </div>
+            
+            <div class="setting-item">
+              <label class="setting-label" for="sessions-per-cycle">
+                Sessions Per Cycle
+                <span class="setting-value" id="sessions-value">4</span>
+              </label>
+              <input type="range" id="sessions-per-cycle" class="pomodoro-slider" 
+                     min="2" max="6" step="1" value="4">
+            </div>
+          </div>
+          
+          <div class="setting-group">
+            <div class="setting-item">
+              <label class="pomodoro-checkbox">
+                <input type="checkbox" id="auto-start-work">
+                <span>Auto-start work sessions</span>
+              </label>
+            </div>
+            
+            <div class="setting-item">
+              <label class="pomodoro-checkbox">
+                <input type="checkbox" id="auto-start-break">
+                <span>Auto-start break sessions</span>
+              </label>
+            </div>
+            
+            <div class="setting-item">
+              <label class="pomodoro-checkbox">
+                <input type="checkbox" id="sound-notifications" checked>
+                <span>Sound notifications</span>
+              </label>
+            </div>
+            
+            <div class="setting-item">
+              <label class="setting-label" for="skip-action">Skip Button Action</label>
+              <select id="skip-action" class="pomodoro-select">
+                <option value="skip">Skip current session</option>
+                <option value="reset">Reset current session</option>
+                <option value="complete">Mark session as finished</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
     </section>
+    
+    <!-- Pomodoro Session Summary Modal -->
+    <div id="pomodoro-summary-modal" class="pomodoro-summary-modal">
+      <div class="pomodoro-summary-content">
+        <div class="summary-header">
+          <h3>🎉 Focus Session Complete!</h3>
+          <p>Great work! Here's your session summary:</p>
+        </div>
+        
+        <div class="summary-stats">
+          <div class="stat-item">
+            <div class="stat-number" id="summary-completed-count">0</div>
+            <div class="stat-label">Tasks Completed</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" id="summary-pending-count">0</div>
+            <div class="stat-label">Tasks Remaining</div>
+          </div>
+        </div>
+        
+        <div class="summary-pending" id="summary-pending-section">
+          <h4>Pending Tasks:</h4>
+          <ul id="summary-pending-tasks"></ul>
+        </div>
+        
+        <div class="summary-actions">
+          <button class="summary-btn primary" onclick="pomodoroTimer.rolloverTasks()">
+            Continue with Current Tasks
+          </button>
+          <button class="summary-btn" onclick="pomodoroTimer.clearTasks()">
+            Clear Task List
+          </button>
+          <button class="summary-btn" onclick="pomodoroTimer.closeSummaryModal()">
+            Just Continue
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Inspiration Section -->
     <section id="inspo" class="inspo-section" style="display: none;">
@@ -551,6 +697,7 @@
 
   <!-- JavaScript -->
   <script type="module" src="scripts/app.js"></script>
+  
 
 </body>
 

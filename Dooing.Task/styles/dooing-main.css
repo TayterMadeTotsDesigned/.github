@@ -213,7 +213,7 @@ body {
 
 .arrow-btn {
     background: transparent;
-    border: none;
+    border: 1px solid var(--accent, #006d77);
     cursor: pointer;
     padding: var(--spacing-xs);
     border-radius: var(--border-radius);
@@ -221,17 +221,24 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 5px;
 }
 
 .arrow-btn:hover {
     background: var(--accent, #006d77);
     transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.arrow-btn:active {
+    transform: translateY(0px);
+    box-shadow: none;
 }
 
 .arrow-btn img {
     width: 24px;
     height: 24px;
-    filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
+    filter: brightness(0) saturate(100%) invert(22%) sepia(78%) saturate(1276%) hue-rotate(152deg) brightness(96%) contrast(101%);
     transition: filter 0.15s ease;
 }
 
@@ -459,11 +466,13 @@ label[for="theme-toggle"] {
     margin: 0 auto;
     padding: var(--spacing-xl) var(--spacing-md);
     min-height: calc(100vh - var(--header-height));
+    display: flex;
+    flex-direction: row;
 }
 
 .task-categories-container {
     position: relative;
-    width: 100%;
+    flex: 1;
     overflow: hidden;
 }
 
@@ -483,6 +492,7 @@ label[for="theme-toggle"] {
     box-shadow: var(--shadow-md);
     border: 1px solid rgba(0, 0, 0, 0.05);
     min-height: 500px;
+    z-index: 1;
 }
 
 .task-category.active {
@@ -635,7 +645,7 @@ label[for="theme-toggle"] {
 }
 
 .empty-icon {
-    font-size: 4rem;
+    font-size: 2.5rem;
     margin-bottom: var(--spacing-lg);
     opacity: 0.8;
     transition: transform 0.3s ease;
@@ -731,6 +741,7 @@ label[for="theme-toggle"] {
     display: none;
 }
 
+
 @media (max-width: 768px) {
     .empty-state {
         padding: var(--spacing-xl) var(--spacing-md);
@@ -738,7 +749,7 @@ label[for="theme-toggle"] {
     }
 
     .empty-icon {
-        font-size: 3rem;
+        font-size: 2rem;
     }
 
     .empty-title {
@@ -761,7 +772,7 @@ label[for="theme-toggle"] {
     }
 
     .empty-icon {
-        font-size: 2.5rem;
+        font-size: 1.8rem;
     }
 
     .empty-title {
