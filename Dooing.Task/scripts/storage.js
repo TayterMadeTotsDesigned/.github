@@ -24,7 +24,17 @@ const Storage = {
             theme: 'cool-blues',
             weekStart: 'sunday'
         };
-    
+    },
+
+    // Generic save method
+    save: (key, data) => {
+        localStorage.setItem(key, JSON.stringify(data));
+    },
+
+    // Generic load method
+    load: (key) => {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
     }
 };
 

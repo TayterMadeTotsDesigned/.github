@@ -17,24 +17,30 @@ const UIRenderer = {
         const list = document.getElementById(`${categoryId}-tasks-list`);
         const emptyState = document.getElementById(`${categoryId}-empty`);
 
-        // Toggle visibility
-        if (tasks.length > 0) {
-            if (container) container.style.display = "block";
-            if (emptyState) emptyState.style.display = "none";
+        // Always ensure both elements exist before proceeding
+        if (!container || !emptyState) {
+            console.warn(`Missing elements for category ${categoryId}`);
+            return;
+        }
 
-            // Clear existing tasks
+        // Toggle visibility based on task count
+        if (tasks.length > 0) {
+            // Show task container, hide empty state
+            container.style.display = "block";
+            emptyState.style.display = "none";
+
+            // Clear existing tasks and add new ones
             if (list) {
                 list.innerHTML = "";
-
-                // Add new tasks
                 tasks.forEach((task) => {
                     const taskElement = this.createTaskElement(task);
                     list.appendChild(taskElement);
                 });
             }
         } else {
-            if (container) container.style.display = "none";
-            if (emptyState) emptyState.style.display = "block";
+            // Hide task container, show empty state
+            container.style.display = "none";
+            emptyState.style.display = "block";
         }
 
         // Update count
@@ -51,8 +57,17 @@ const UIRenderer = {
 
         taskElement.dataset.taskId = task.id;
         taskElement.querySelector(".task-title").textContent = task.name;
-        taskElement.querySelector(".task-description").textContent =
-            task.description || "";
+        
+        // Handle task description with fallback text
+        const descriptionElement = taskElement.querySelector(".task-description");
+        if (task.description && task.description.trim()) {
+            descriptionElement.textContent = task.description;
+            descriptionElement.style.fontStyle = "normal";
+        } else {
+            descriptionElement.textContent = "No description provided";
+            descriptionElement.style.fontStyle = "italic";
+            descriptionElement.style.opacity = "0.6";
+        }
 
         if (task.completed) {
             taskElement.classList.add("completed");
@@ -68,31 +83,54 @@ const UIRenderer = {
     addTaskEventListeners(taskElement) {
         const taskId = taskElement.dataset.taskId;
         
-        taskElement
-            .querySelector(".task-checkbox")
-            .addEventListener("click", (e) => {
+        // Checkbox event listener
+        const checkbox = taskElement.querySelector(".task-checkbox");
+        if (checkbox) {
+            checkbox.addEventListener("click", (e) => {
                 e.stopPropagation();
-                TaskManager.toggleTaskCompletion(taskId);
-                this.renderTaskLists();
-            });
-
-        taskElement
-            .querySelector(".task-edit-btn")
-            .addEventListener("click", (e) => {
-                e.stopPropagation();
-                // For now, just alert - you can implement edit modal later
-                alert('Edit functionality coming soon!');
-            });
-
-        taskElement
-            .querySelector(".task-delete-btn")
-            .addEventListener("click", (e) => {
-                e.stopPropagation();
-                if (confirm("Delete this task?")) {
-                    TaskManager.deleteTask(taskId);
+                const success = TaskManager.toggleTaskCompletion(taskId);
+                if (success) {
+                    // Update UI immediately for better UX
                     this.renderTaskLists();
+                    // Also update calendar views if App is available
+                    if (window.App && window.App.updateCalendarViews) {
+                        window.App.updateCalendarViews();
+                    }
+                } else {
+                    console.error('Failed to toggle task completion');
                 }
             });
+        }
+
+        // Edit button event listener
+        const editBtn = taskElement.querySelector(".task-edit-btn");
+        if (editBtn) {
+            editBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.openEditModal(taskId);
+            });
+        }
+
+        // Delete button event listener
+        const deleteBtn = taskElement.querySelector(".task-delete-btn");
+        if (deleteBtn) {
+            deleteBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (confirm("Are you sure you want to delete this task?")) {
+                    const deleted = TaskManager.deleteTask(taskId);
+                    if (deleted) {
+                        // Update UI immediately
+                        this.renderTaskLists();
+                        // Also update calendar views if App is available
+                        if (window.App && window.App.updateCalendarViews) {
+                            window.App.updateCalendarViews();
+                        }
+                    } else {
+                        alert('Failed to delete task. Please try again.');
+                    }
+                }
+            });
+        }
     },
 
     renderCategoryIndicators() {
@@ -114,20 +152,20 @@ const UIRenderer = {
         if (futureCount) {
             futureCount.textContent = `${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'}`;
         }
+    },
+
+    openEditModal(taskId) {
+        const task = TaskManager.getTaskById(taskId);
+        if (!task) {
+            alert('Task not found');
+            return;
+        }
         
-        // Show/hide empty state based on tasks
-        const emptyState = document.getElementById('future-empty');
-        if (emptyState) {
-            if (tasks.length === 0) {
-                emptyState.style.display = 'block';
-                // Show the add task button in the empty state
-                const addTaskBtn = emptyState.querySelector('.add-task-btn');
-                if (addTaskBtn) {
-                    addTaskBtn.style.display = 'block';
-                }
-            } else {
-                emptyState.style.display = 'none';
-            }
+        // Use the main App's openTaskModal method but for editing
+        if (window.App) {
+            window.App.openEditTaskModal(task);
+        } else {
+            alert('Edit functionality not available');
         }
     }
 };

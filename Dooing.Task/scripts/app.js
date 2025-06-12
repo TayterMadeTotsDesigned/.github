@@ -3,6 +3,7 @@ import TaskManager from './taskManager.js';
 import Storage from './storage.js';
 import { UIRenderer } from './UI_Renderer.js';
 import { generateId, getToday, formatDate } from './utils.js';
+import PomodoroTimer from './pomodoro.js';
 
 const App = {
     currentCategory: 'today',
@@ -11,6 +12,10 @@ const App = {
         // Load initial data
         this.tasks = TaskManager.getTasks();
         this.settings = Storage.loadSettings();
+        
+        // Initialize Pomodoro Timer
+        this.pomodoroTimer = new PomodoroTimer();
+        window.pomodoroTimer = this.pomodoroTimer; // Make accessible globally for modal callbacks
         
         // Set up event listeners
         this.bindEvents();
@@ -63,6 +68,18 @@ const App = {
         document.getElementById('recurring-task').addEventListener('change', (e) => {
             const recurrenceOptions = document.getElementById('recurrence-options');
             recurrenceOptions.style.display = e.target.checked ? 'block' : 'none';
+            
+            // Reset recurrence options when unchecked
+            if (!e.target.checked) {
+                this.resetRecurrenceOptions();
+            }
+        });
+
+        // Handle recurrence type changes
+        document.addEventListener('change', (e) => {
+            if (e.target.name === 'recurrence-type') {
+                this.handleRecurrenceTypeChange(e.target.value);
+            }
         });
 
         document.getElementById('left-arrow-btn').addEventListener('click', () => {
@@ -162,7 +179,7 @@ const App = {
     },
 
     navigateCategories(direction) {
-        const categories = ['today', 'tomorrow', 'future'];
+        const categories = ['today', 'tomorrow', 'future', 'pomodoro'];
         const currentIndex = categories.indexOf(this.currentCategory);
         const nextIndex = (currentIndex + direction + categories.length) % categories.length;
         
@@ -170,24 +187,52 @@ const App = {
     },
 
     switchCategory(category) {
-        // Hide all categories
+        // Hide all task categories first
         document.querySelectorAll('.task-category').forEach(el => {
             el.classList.remove('active');
         });
         
-        // Show selected category
-        document.getElementById(`${category}-section`).classList.add('active');
+        // Hide all non-task sections (but not task categories)
+        document.querySelectorAll('section:not(.hero-section):not(.task-category)').forEach(el => {
+            el.style.display = 'none';
+        });
         
         // Update current category
         this.currentCategory = category;
         
-        // Update hero section
-        document.getElementById('hero-category').textContent = 
-            category.charAt(0).toUpperCase() + category.slice(1);
+        if (category === 'pomodoro') {
+            // Show Pomodoro section
+            const pomodoroSection = document.getElementById('pomodoro');
+            if (pomodoroSection) {
+                pomodoroSection.style.display = 'block';
+                if (this.pomodoroTimer) {
+                    this.pomodoroTimer.initializeSettingsUI();
+                }
+            }
+            
+            // Update hero section
+            document.getElementById('hero-category').textContent = 'Pomodoro Timer';
+        } else {
+            // Hide the Pomodoro section
+            const pomodoroSection = document.getElementById('pomodoro');
+            if (pomodoroSection) {
+                pomodoroSection.style.display = 'none';
+            }
+            
+            // Show selected task category
+            document.getElementById(`${category}-section`).classList.add('active');
+            
+            // Update hero section
+            document.getElementById('hero-category').textContent = 
+                category.charAt(0).toUpperCase() + category.slice(1);
+        }
+        
+        // Always re-render task lists when switching categories to ensure proper empty state display
+        UIRenderer.renderTaskLists();
         
         // Update active dots if they exist
         document.querySelectorAll('.category-dot').forEach((dot, index) => {
-            const categories = ['today', 'tomorrow', 'future'];
+            const categories = ['today', 'tomorrow', 'future', 'pomodoro'];
             dot.classList.toggle('active', index === categories.indexOf(category));
         });
     },
@@ -306,20 +351,20 @@ const App = {
         // Handle different navigation targets
         switch(href) {
             case '#task-list':
-                // Focus on task list area
-                this.focusOnTaskList();
+                // Focus on task list area - go back to Today
+                this.switchCategory('today');
                 break;
             case '#pomodoro':
-                this.showNotification('Pomodoro timer coming soon!', 'info');
+                this.switchCategory('pomodoro');
                 break;
             case '#inspo':
-                this.showNotification('Inspiration section coming soon!', 'info');
+                this.showSection('inspo');
                 break;
             case '#about':
-                this.showAbout();
+                this.showSection('about');
                 break;
             case '#contact':
-                this.showContact();
+                this.showSection('contact');
                 break;
             default:
                 console.log('Navigation not implemented for:', href);
@@ -332,6 +377,32 @@ const App = {
         if (taskSection) {
             taskSection.scrollIntoView({ behavior: 'smooth' });
         }
+    },
+
+    showSection(sectionId) {
+        // Hide all task categories
+        document.querySelectorAll('.task-category').forEach(el => {
+            el.classList.remove('active');
+        });
+        
+        // Hide all non-task sections except hero
+        document.querySelectorAll('section:not(.hero-section):not(.task-category)').forEach(el => {
+            el.style.display = 'none';
+        });
+        
+        // Show the requested section
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.style.display = 'block';
+        }
+        
+        // Update hero category
+        const heroCategory = document.getElementById('hero-category');
+        if (heroCategory) {
+            heroCategory.textContent = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
+        }
+        
+        this.currentCategory = sectionId;
     },
 
     showSettings() {
@@ -361,8 +432,17 @@ const App = {
         UIRenderer.renderTaskLists();
         this.renderCategoryIndicators();
         
-        // Initialize calendar views
-        this.initializeMonthCalendar();
+        // Ensure the current category is visible
+        this.switchCategory(this.currentCategory);
+        
+        // Initialize calendar views on first load
+        if (!this.currentWeekStart && !this.currentMonth) {
+            this.renderWeekView();
+            this.renderMonthView();
+        } else {
+            // Update calendar views with current tasks
+            this.updateCalendarViews();
+        }
     },
 
     renderTaskCounts() {
@@ -387,7 +467,7 @@ const App = {
         const container = document.getElementById('category-indicator');
         if (container) {
             container.innerHTML = '';
-            ['today', 'tomorrow', 'future'].forEach((category, index) => {
+            ['today', 'tomorrow', 'future', 'pomodoro'].forEach((category, index) => {
                 const dot = document.createElement('div');
                 dot.className = `category-dot ${index === 0 ? 'active' : ''}`;
                 dot.dataset.category = category;
@@ -427,8 +507,62 @@ const App = {
         document.body.style.overflow = 'hidden'; // Prevent background scroll
     },
     
+    openEditTaskModal(task) {
+        const modal = document.getElementById('task-modal');
+        const form = document.getElementById('task-form');
+        
+        // Reset form
+        form.reset();
+        
+        // Fill form with existing task data
+        document.getElementById('task-name').value = task.name;
+        document.getElementById('task-desc').value = task.description || '';
+        
+        // Set category
+        const categoryRadio = document.querySelector(`input[name="category"][value="${task.category}"]`);
+        if (categoryRadio) {
+            categoryRadio.checked = true;
+        }
+        
+        // Show date picker if future category and set date
+        const futureDateGroup = document.getElementById('future-date-group');
+        if (task.category === 'future') {
+            futureDateGroup.style.display = 'block';
+            const dateInput = document.getElementById('task-date');
+            if (dateInput && task.dueDate) {
+                const formattedDate = new Date(task.dueDate).toISOString().split('T')[0];
+                dateInput.value = formattedDate;
+            }
+        } else {
+            futureDateGroup.style.display = 'none';
+        }
+        
+        // Store task ID for editing (instead of creating new)
+        form.dataset.editTaskId = task.id;
+        
+        // Update modal title
+        const modalTitle = document.getElementById('modal-title');
+        if (modalTitle) {
+            modalTitle.textContent = 'Edit Task';
+        }
+        
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+    },
+    
     closeTaskModal() {
         const modal = document.getElementById('task-modal');
+        const form = document.getElementById('task-form');
+        
+        // Reset edit mode
+        delete form.dataset.editTaskId;
+        
+        // Reset modal title
+        const modalTitle = document.getElementById('modal-title');
+        if (modalTitle) {
+            modalTitle.textContent = 'Add New Task';
+        }
+        
         modal.classList.remove('active');
         document.body.style.overflow = ''; // Restore scroll
     },
@@ -437,7 +571,8 @@ const App = {
         e.preventDefault();
         
         try {
-            const formData = new FormData(e.target);
+            const form = e.target;
+            const formData = new FormData(form);
             const taskName = formData.get('name');
             
             if (!taskName || taskName.trim() === '') {
@@ -445,43 +580,75 @@ const App = {
                 return;
             }
             
-            // Get smart category assignment
-            const originalCategory = formData.get('category');
-            const smartCategory = this.getSmartCategory(formData);
+            // Check if we're editing an existing task
+            const editTaskId = form.dataset.editTaskId;
             
-            const task = {
-                id: generateId(),
-                name: taskName.trim(),
-                description: formData.get('description') || '',
-                category: smartCategory,
-                originalCategory: originalCategory, // Keep track of user's original choice
-                dueDate: this.getDueDate(formData),
-                completed: false,
-                createdAt: new Date().toISOString(),
-                recurring: formData.get('recurring') ? formData.get('recurrence-type') : null
-            };
-            
-            // Validate task limits for the final category
-            if (!TaskManager.canAddTask(task.category)) {
-                alert(`Cannot add more tasks to ${task.category}. Task limit reached.`);
-                return;
+            if (editTaskId) {
+                // Editing existing task
+                const originalCategory = formData.get('category');
+                const smartCategory = this.getSmartCategory(formData);
+                
+                const updatedTask = {
+                    id: editTaskId,
+                    name: taskName.trim(),
+                    description: formData.get('description') || '',
+                    category: smartCategory,
+                    originalCategory: originalCategory,
+                    dueDate: this.getDueDate(formData),
+                    recurrence: this.getRecurrenceData(formData)
+                };
+                
+                console.log('Updating task:', updatedTask); // Debug log
+                TaskManager.updateTask(updatedTask);
+                this.closeTaskModal();
+                this.renderUI();
+                
+                // Show success message
+                let message = `Task "${updatedTask.name}" updated successfully!`;
+                if (originalCategory !== smartCategory) {
+                    message += ` (Moved to ${smartCategory} based on selected date)`;
+                }
+                this.showNotification(message);
+                
+            } else {
+                // Creating new task
+                const originalCategory = formData.get('category');
+                const smartCategory = this.getSmartCategory(formData);
+                
+                const task = {
+                    id: generateId(),
+                    name: taskName.trim(),
+                    description: formData.get('description') || '',
+                    category: smartCategory,
+                    originalCategory: originalCategory, // Keep track of user's original choice
+                    dueDate: this.getDueDate(formData),
+                    completed: false,
+                    createdAt: new Date().toISOString(),
+                    recurrence: this.getRecurrenceData(formData)
+                };
+                
+                // Validate task limits for the final category
+                if (!TaskManager.canAddTask(task.category)) {
+                    alert(`Cannot add more tasks to ${task.category}. Task limit reached.`);
+                    return;
+                }
+                
+                console.log('Adding task:', task); // Debug log
+                TaskManager.addTask(task);
+                this.closeTaskModal();
+                this.renderUI();
+                
+                // Show success message with category reassignment info
+                let message = `Task "${task.name}" added successfully!`;
+                if (originalCategory !== smartCategory) {
+                    message += ` (Moved to ${smartCategory} based on selected date)`;
+                }
+                this.showNotification(message);
             }
-            
-            console.log('Adding task:', task); // Debug log
-            TaskManager.addTask(task);
-            this.closeTaskModal();
-            this.renderUI();
-            
-            // Show success message with category reassignment info
-            let message = `Task "${task.name}" added successfully!`;
-            if (originalCategory !== smartCategory) {
-                message += ` (Moved to ${smartCategory} based on selected date)`;
-            }
-            this.showNotification(message);
             
         } catch (error) {
-            console.error('Error adding task:', error);
-            alert('An error occurred while adding the task. Please try again.');
+            console.error('Error saving task:', error);
+            alert('An error occurred while saving the task. Please try again.');
         }
     },
 
@@ -539,8 +706,15 @@ const App = {
     
     getDueDate(formData) {
         const category = formData.get('category');
+        const selectedDate = formData.get('date');
         const today = getToday();
         
+        // If a specific date is selected, use it regardless of category
+        if (selectedDate) {
+            return new Date(selectedDate).toISOString();
+        }
+        
+        // Otherwise, use category defaults
         switch(category) {
             case 'today':
                 return today.toISOString();
@@ -549,41 +723,45 @@ const App = {
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 return tomorrow.toISOString();
             case 'future':
-                const selectedDate = formData.get('date');
-                return selectedDate ? new Date(selectedDate).toISOString() : today.toISOString();
+                // For future without specific date, default to tomorrow + 1
+                const futureDefault = new Date(today);
+                futureDefault.setDate(today.getDate() + 2);
+                return futureDefault.toISOString();
             default:
                 return today.toISOString();
         }
     },
 
-    // Smart category assignment based on selected date
+    // Prioritize dates over manual selection - determine category based on due date
     getSmartCategory(formData) {
-        const selectedCategory = formData.get('category');
         const selectedDate = formData.get('date');
         
-        // If not future category, return as is
-        if (selectedCategory !== 'future' || !selectedDate) {
-            return selectedCategory;
+        // If a date is provided, always use date-based categorization
+        if (selectedDate) {
+            const today = getToday();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const selected = new Date(selectedDate);
+            
+            // Compare dates (ignore time)
+            const todayStr = today.toDateString();
+            const tomorrowStr = tomorrow.toDateString();
+            const selectedStr = selected.toDateString();
+            
+            if (selectedStr === todayStr) {
+                return 'today';
+            } else if (selectedStr === tomorrowStr) {
+                return 'tomorrow';
+            } else if (selected > tomorrow) {
+                return 'future';
+            } else {
+                return 'overdue'; // Past dates
+            }
         }
         
-        const today = getToday();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        const selected = new Date(selectedDate);
-        
-        // Compare dates (ignore time)
-        const todayStr = today.toDateString();
-        const tomorrowStr = tomorrow.toDateString();
-        const selectedStr = selected.toDateString();
-        
-        if (selectedStr === todayStr) {
-            return 'today';
-        } else if (selectedStr === tomorrowStr) {
-            return 'tomorrow';
-        } else {
-            return 'future';
-        }
+        // If no date is provided, use manual selection but default to future
+        const selectedCategory = formData.get('category');
+        return selectedCategory || 'future';
     },
 
     showDateWarning(message) {
@@ -608,80 +786,136 @@ const App = {
         warningElement.textContent = message;
     },
 
-    toggleFutureView(viewType) {
-        // Get the calendar containers
+    // Calendar functionality
+    currentWeekStart: null,
+    currentMonth: null,
+    currentYear: null,
+    
+    toggleFutureView(view) {
         const weekView = document.getElementById('week-calendar');
         const monthView = document.getElementById('month-calendar');
-        
-        // Get toggle buttons
         const weekBtn = document.getElementById('week-view-btn');
         const monthBtn = document.getElementById('month-view-btn');
         
-        if (viewType === 'week') {
-            // Show week view, hide month view
+        // Toggle view containers
+        if (view === 'week') {
             weekView.style.display = 'block';
             monthView.style.display = 'none';
-            
-            // Update active button state
             weekBtn.classList.add('active');
             monthBtn.classList.remove('active');
+            this.renderWeekView();
         } else {
-            // Show month view, hide week view
             weekView.style.display = 'none';
             monthView.style.display = 'block';
-            
-            // Update active button state
             weekBtn.classList.remove('active');
             monthBtn.classList.add('active');
-            
-            // Initialize month calendar if not already done
-            this.initializeMonthCalendar();
+            this.renderMonthView();
         }
     },
-
-    initializeMonthCalendar() {
-        const monthDaysGrid = document.getElementById('month-days-grid');
-        if (!monthDaysGrid) return;
-        
-        // Clear existing content
-        monthDaysGrid.innerHTML = '';
-        
+    
+    renderWeekView() {
         const today = new Date();
-        const currentMonth = today.getMonth();
-        const currentYear = today.getFullYear();
         
-        // Get first day of the month
-        const firstDay = new Date(currentYear, currentMonth, 1);
-        // Get last day of the month
-        const lastDay = new Date(currentYear, currentMonth + 1, 0);
-        
-        // Get day of week for first day (0 = Sunday, 6 = Saturday)
-        const firstDayOfWeek = firstDay.getDay();
-        
-        // Create days from previous month to fill the first row
-        for (let i = 0; i < firstDayOfWeek; i++) {
-            const prevMonthDate = new Date(currentYear, currentMonth, -firstDayOfWeek + i + 1);
-            const dayEl = this.createMonthDayElement(prevMonthDate, 'other-month');
-            monthDaysGrid.appendChild(dayEl);
+        // Initialize current week if not set
+        if (!this.currentWeekStart) {
+            const dayOfWeek = today.getDay(); // 0 = Sunday
+            this.currentWeekStart = new Date(today);
+            this.currentWeekStart.setDate(today.getDate() - dayOfWeek);
         }
         
-        // Create days for current month
-        for (let i = 1; i <= lastDay.getDate(); i++) {
-            const date = new Date(currentYear, currentMonth, i);
-            const isToday = date.toDateString() === today.toDateString();
-            const dayEl = this.createMonthDayElement(date, isToday ? 'today' : '');
-            monthDaysGrid.appendChild(dayEl);
+        // Update week title
+        const weekEnd = new Date(this.currentWeekStart);
+        weekEnd.setDate(this.currentWeekStart.getDate() + 6);
+        
+        const titleEl = document.getElementById('week-title');
+        if (titleEl) {
+            const startStr = this.currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const endStr = weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            titleEl.textContent = `${startStr} - ${endStr}`;
         }
         
-        // Fill remaining slots with next month's days
-        const totalDaysDisplayed = monthDaysGrid.children.length;
-        const remainingSlots = 42 - totalDaysDisplayed; // 6 rows x 7 days
+        // Render week days
+        const weekDays = document.querySelectorAll('.week-day');
+        weekDays.forEach((dayEl, index) => {
+            const date = new Date(this.currentWeekStart);
+            date.setDate(this.currentWeekStart.getDate() + index);
+            
+            // Update day info
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            const dayNumber = date.getDate();
+            
+            dayEl.querySelector('.day-name').textContent = dayName;
+            dayEl.querySelector('.day-number').textContent = dayNumber;
+            dayEl.dataset.date = date.toISOString().split('T')[0];
+            
+            // Check if it's today
+            if (date.toDateString() === today.toDateString()) {
+                dayEl.classList.add('today');
+            } else {
+                dayEl.classList.remove('today');
+            }
+            
+            // Render tasks for this day
+            this.renderDayTasks(dayEl, date);
+        });
         
-        for (let i = 1; i <= remainingSlots; i++) {
-            const nextMonthDate = new Date(currentYear, currentMonth + 1, i);
-            const dayEl = this.createMonthDayElement(nextMonthDate, 'other-month');
-            monthDaysGrid.appendChild(dayEl);
+        // Add navigation event listeners
+        this.setupWeekNavigation();
+    },
+    
+    renderMonthView() {
+        const today = new Date();
+        
+        // Initialize current month if not set
+        if (!this.currentMonth || !this.currentYear) {
+            this.currentMonth = today.getMonth();
+            this.currentYear = today.getFullYear();
         }
+        
+        // Update month title
+        const titleEl = document.getElementById('month-title');
+        if (titleEl) {
+            const date = new Date(this.currentYear, this.currentMonth);
+            titleEl.textContent = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        }
+        
+        // Clear and render month days
+        const monthDaysGrid = document.getElementById('month-days-grid');
+        if (monthDaysGrid) {
+            monthDaysGrid.innerHTML = '';
+            
+            const firstDay = new Date(this.currentYear, this.currentMonth, 1);
+            const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+            const firstDayOfWeek = firstDay.getDay();
+            
+            // Add days from previous month
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const prevDate = new Date(this.currentYear, this.currentMonth, -firstDayOfWeek + i + 1);
+                const dayEl = this.createMonthDayElement(prevDate, 'other-month');
+                monthDaysGrid.appendChild(dayEl);
+            }
+            
+            // Add days of current month
+            for (let i = 1; i <= lastDay.getDate(); i++) {
+                const date = new Date(this.currentYear, this.currentMonth, i);
+                const isToday = date.toDateString() === today.toDateString();
+                const dayEl = this.createMonthDayElement(date, isToday ? 'today' : '');
+                monthDaysGrid.appendChild(dayEl);
+            }
+            
+            // Fill remaining slots with next month days
+            const totalDays = monthDaysGrid.children.length;
+            const remainingSlots = 42 - totalDays; // 6 rows x 7 days
+            
+            for (let i = 1; i <= remainingSlots; i++) {
+                const nextDate = new Date(this.currentYear, this.currentMonth + 1, i);
+                const dayEl = this.createMonthDayElement(nextDate, 'other-month');
+                monthDaysGrid.appendChild(dayEl);
+            }
+        }
+        
+        // Add navigation event listeners
+        this.setupMonthNavigation();
     },
     
     createMonthDayElement(date, className) {
@@ -699,14 +933,328 @@ const App = {
         dayEl.appendChild(dayNumber);
         dayEl.appendChild(dayTasks);
         
+        // Render tasks for this day
+        this.renderDayTasks(dayEl, date);
+        
         // Add click event to add a task for this date
         dayEl.addEventListener('click', () => {
             this.openTaskModal('future', date);
         });
         
         return dayEl;
-    }
+    },
+    
+    renderDayTasks(dayEl, date) {
+        const tasksContainer = dayEl.querySelector('.day-tasks');
+        if (!tasksContainer) return;
+        
+        tasksContainer.innerHTML = '';
+        
+        // Use the new filtered task method to get tasks for this specific date
+        const tasks = TaskManager.getTasksForDate(date);
+        
+        // Render each task
+        tasks.forEach(task => {
+            const taskEl = document.createElement('div');
+            taskEl.className = `calendar-task ${task.completed ? 'completed' : ''}`;
+            
+            // Add special styling for recurring tasks
+            if (task.isVirtualRecurring) {
+                taskEl.classList.add('recurring-task');
+                taskEl.title = `Recurring: ${task.name}`;
+            }
+            
+            taskEl.textContent = task.name;
+            taskEl.dataset.taskId = task.id;
+            
+            // Add click event for task interaction
+            taskEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showTaskMenu(task, e);
+            });
+            
+            tasksContainer.appendChild(taskEl);
+        });
+    },
+    
+    showTaskMenu(task, event) {
+        // Create a simple context menu for task actions
+        const existingMenu = document.querySelector('.task-context-menu');
+        if (existingMenu) {
+            existingMenu.remove();
+        }
+        
+        const menu = document.createElement('div');
+        menu.className = 'task-context-menu';
+        menu.style.cssText = `
+            position: fixed;
+            top: ${event.clientY}px;
+            left: ${event.clientX}px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 120px;
+        `;
+        
+        const toggleBtn = document.createElement('button');
+        toggleBtn.textContent = task.completed ? 'Mark Incomplete' : 'Mark Complete';
+        toggleBtn.style.cssText = `
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        `;
+        toggleBtn.addEventListener('click', () => {
+            // Handle virtual recurring tasks
+            if (task.isVirtualRecurring) {
+                // Create an actual instance for this recurring task
+                const actualTask = TaskManager.createRecurringTaskInstance(
+                    TaskManager.getTaskById(task.parentRecurringId),
+                    new Date(task.dueDate)
+                );
+                TaskManager.toggleTaskCompletion(actualTask.id);
+            } else {
+                TaskManager.toggleTaskCompletion(task.id);
+            }
+            this.renderUI();
+            this.updateCalendarViews();
+            menu.remove();
+        });
+        
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit Task';
+        editBtn.style.cssText = toggleBtn.style.cssText;
+        editBtn.addEventListener('click', () => {
+            // Handle virtual recurring tasks
+            if (task.isVirtualRecurring) {
+                // Edit the parent recurring task instead
+                const parentTask = TaskManager.getTaskById(task.parentRecurringId);
+                if (parentTask) {
+                    this.openEditTaskModal(parentTask);
+                } else {
+                    alert('Parent recurring task not found');
+                }
+            } else {
+                this.openEditTaskModal(task);
+            }
+            menu.remove();
+        });
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete Task';
+        deleteBtn.style.cssText = `
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            color: #dc3545;
+        `;
+        deleteBtn.addEventListener('click', () => {
+            if (task.isVirtualRecurring) {
+                if (confirm('Delete this recurring task instance?')) {
+                    // For virtual tasks, we need to create an instance first, then delete it
+                    const actualTask = TaskManager.createRecurringTaskInstance(
+                        TaskManager.getTaskById(task.parentRecurringId),
+                        new Date(task.dueDate)
+                    );
+                    const deleted = TaskManager.deleteTask(actualTask.id);
+                    if (deleted) {
+                        this.renderUI();
+                        this.updateCalendarViews();
+                    } else {
+                        alert('Failed to delete task. Please try again.');
+                    }
+                }
+            } else {
+                if (confirm('Delete this task?')) {
+                    const deleted = TaskManager.deleteTask(task.id);
+                    if (deleted) {
+                        this.renderUI();
+                        this.updateCalendarViews();
+                    } else {
+                        alert('Failed to delete task. Please try again.');
+                    }
+                }
+            }
+            menu.remove();
+        });
+        
+        menu.appendChild(toggleBtn);
+        menu.appendChild(editBtn);
+        menu.appendChild(deleteBtn);
+        document.body.appendChild(menu);
+        
+        // Remove menu when clicking outside
+        setTimeout(() => {
+            document.addEventListener('click', function removeMenu() {
+                menu.remove();
+                document.removeEventListener('click', removeMenu);
+            });
+        }, 0);
+    },
+    
+    setupWeekNavigation() {
+        const prevBtn = document.getElementById('prev-week');
+        const nextBtn = document.getElementById('next-week');
+        
+        // Remove existing listeners
+        const newPrevBtn = prevBtn.cloneNode(true);
+        const newNextBtn = nextBtn.cloneNode(true);
+        prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+        nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+        
+        // Add new listeners
+        newPrevBtn.addEventListener('click', () => {
+            this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7);
+            this.renderWeekView();
+        });
+        
+        newNextBtn.addEventListener('click', () => {
+            this.currentWeekStart.setDate(this.currentWeekStart.getDate() + 7);
+            this.renderWeekView();
+        });
+    },
+    
+    setupMonthNavigation() {
+        const prevBtn = document.getElementById('prev-month');
+        const nextBtn = document.getElementById('next-month');
+        
+        // Remove existing listeners
+        const newPrevBtn = prevBtn.cloneNode(true);
+        const newNextBtn = nextBtn.cloneNode(true);
+        prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+        nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+        
+        // Add new listeners
+        newPrevBtn.addEventListener('click', () => {
+            this.currentMonth--;
+            if (this.currentMonth < 0) {
+                this.currentMonth = 11;
+                this.currentYear--;
+            }
+            this.renderMonthView();
+        });
+        
+        newNextBtn.addEventListener('click', () => {
+            this.currentMonth++;
+            if (this.currentMonth > 11) {
+                this.currentMonth = 0;
+                this.currentYear++;
+            }
+            this.renderMonthView();
+        });
+    },
+
+    updateCalendarViews() {
+        // Update both week and month views when tasks change
+        if (this.currentCategory === 'future') {
+            const weekView = document.getElementById('week-calendar');
+            const monthView = document.getElementById('month-calendar');
+            
+            if (weekView && weekView.style.display !== 'none') {
+                this.renderWeekView();
+            }
+            if (monthView && monthView.style.display !== 'none') {
+                this.renderMonthView();
+            }
+        }
+    },
+
+    // Recurrence helper methods
+    resetRecurrenceOptions() {
+        // Reset all recurrence selections
+        const daysGroup = document.getElementById('recurrence-days-group');
+        const monthlyGroup = document.getElementById('recurrence-monthly-group');
+        
+        if (daysGroup) daysGroup.style.display = 'none';
+        if (monthlyGroup) monthlyGroup.style.display = 'none';
+        
+        // Uncheck all day checkboxes
+        document.querySelectorAll('input[name="recurrence-days"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // Reset to default recurrence type
+        const dailyRadio = document.querySelector('input[name="recurrence-type"][value="daily"]');
+        if (dailyRadio) dailyRadio.checked = true;
+    },
+
+    handleRecurrenceTypeChange(type) {
+        const daysGroup = document.getElementById('recurrence-days-group');
+        const monthlyGroup = document.getElementById('recurrence-monthly-group');
+        
+        // Hide all groups first
+        if (daysGroup) daysGroup.style.display = 'none';
+        if (monthlyGroup) monthlyGroup.style.display = 'none';
+        
+        // Show relevant group based on type
+        switch (type) {
+            case 'weekly':
+                if (daysGroup) {
+                    daysGroup.style.display = 'block';
+                    // Set default to current day if none selected
+                    const checkedDays = document.querySelectorAll('input[name="recurrence-days"]:checked');
+                    if (checkedDays.length === 0) {
+                        const today = new Date().getDay();
+                        const todayCheckbox = document.querySelector(`input[name="recurrence-days"][value="${today}"]`);
+                        if (todayCheckbox) todayCheckbox.checked = true;
+                    }
+                }
+                break;
+            case 'monthly':
+                if (monthlyGroup) monthlyGroup.style.display = 'block';
+                break;
+            case 'daily':
+            default:
+                // No additional options needed for daily
+                break;
+        }
+    },
+
+    getRecurrenceData(formData) {
+        const isRecurring = formData.get('recurring');
+        if (!isRecurring) return null;
+
+        const recurrenceType = formData.get('recurrence-type');
+        const recurrenceData = {
+            type: recurrenceType,
+            enabled: true
+        };
+
+        switch (recurrenceType) {
+            case 'daily':
+                // No additional data needed
+                break;
+            case 'weekly':
+                const selectedDays = [];
+                document.querySelectorAll('input[name="recurrence-days"]:checked').forEach(checkbox => {
+                    selectedDays.push(parseInt(checkbox.value));
+                });
+                recurrenceData.days = selectedDays.length > 0 ? selectedDays : [new Date().getDay()];
+                break;
+            case 'monthly':
+                const monthlyType = formData.get('monthly-type');
+                recurrenceData.monthlyType = monthlyType || 'date';
+                break;
+        }
+
+        return recurrenceData;
+    },
+
+    // ...existing code...
 };
 
 // Initialize the app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => App.init());
+document.addEventListener('DOMContentLoaded', () => {
+    App.init();
+    window.App = App; // Make App globally accessible
+});
