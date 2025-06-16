@@ -1,10 +1,9 @@
-// app.js
+// app.js - Main application orchestrator
 import TaskManager from './taskManager.js';
-import Storage from './storage.js';
 import { UIRenderer } from './UI_Renderer.js';
-import { generateId, getToday, formatDate } from './utils.js';
 import PomodoroTimer from './pomodoro.js';
 
+<<<<<<< Updated upstream
 const App = {
     currentCategory: 'today',
     
@@ -34,26 +33,26 @@ const App = {
             this.updatePomodoroTaskList();
         }
     },
+=======
+// Import modular components
+import CalendarManager from './modules/CalendarManager.js';
+import ModalManager from './modules/ModalManager.js';
+import TaskRenderer from './modules/TaskRenderer.js';
+import EventHandler from './modules/EventHandler.js';
+import ThemeManager from './modules/ThemeManager.js';
+>>>>>>> Stashed changes
 
-    bindEvents() {
-        // New task button
-        document.getElementById('new-task-btn').addEventListener('click', () => {
-            this.openTaskModal();
-        });
-        
-        // Add task buttons in empty states
-        document.querySelectorAll('.add-task-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const category = e.target.dataset.category;
-                this.openTaskModal(category);
-            });
-        });
-        
-        // Modal close
-        document.getElementById('close-modal').addEventListener('click', () => {
-            this.closeTaskModal();
-        });
+/**
+ * Main Application Class
+ * Orchestrates all modules and handles initialization
+ */
+class DooingTaskApp {
+    constructor() {
+        this.isInitialized = false;
+        this.modules = {};
+    }
 
+<<<<<<< Updated upstream
         // Modal backdrop click to close
         document.querySelector('.modal-backdrop').addEventListener('click', () => {
             this.closeTaskModal();
@@ -501,12 +500,19 @@ const App = {
         try {
             const formData = new FormData(e.target);
             const taskName = formData.get('name');
+=======
+    /**
+     * Initialize the application
+     */
+    async init() {
+        try {
+            console.log('🚀 Starting Dooing.Task initialization...');
+>>>>>>> Stashed changes
             
-            if (!taskName || taskName.trim() === '') {
-                alert('Please enter a task name');
-                return;
-            }
+            // Validate dependencies first
+            this.validateDependencies();
             
+<<<<<<< Updated upstream
             // Get smart category assignment
             const originalCategory = formData.get('category');
             const smartCategory = this.getSmartCategory(formData);
@@ -528,6 +534,31 @@ const App = {
                 alert(`Cannot add more tasks to ${task.category}. Task limit reached.`);
                 return;
             }
+=======
+            // Initialize core modules
+            await this.initializeModules();
+            
+            // Validate modules after initialization
+            this.validateModules();
+            
+            // Initialize TaskManager
+            await TaskManager.init();
+            
+            // Initialize Pomodoro Timer
+            this.pomodoroTimer = new PomodoroTimer();
+            window.pomodoroTimer = this.pomodoroTimer; // Global access for callbacks
+            
+            // Set up module integrations
+            this.setupModuleIntegrations();
+            
+            // Render initial UI
+            this.renderInitialUI();
+            
+            // Mark as initialized
+            this.isInitialized = true;
+            
+            console.log('✅ Dooing.Task initialized successfully');
+>>>>>>> Stashed changes
             
             console.log('Adding task:', task); // Debug log
             TaskManager.addTask(task);
@@ -542,36 +573,143 @@ const App = {
             this.showNotification(message);
             
         } catch (error) {
+<<<<<<< Updated upstream
             console.error('Error adding task:', error);
             alert('An error occurred while adding the task. Please try again.');
+=======
+            console.error('❌ Failed to initialize Dooing.Task:', error);
+            this.handleInitializationError(error);
+>>>>>>> Stashed changes
         }
-    },
+    }
 
-    showNotification(message) {
-        // Enhanced notification styling
-        const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span>✅</span>
-                <span>${message}</span>
+    /**
+     * Initialize all modular components
+     */
+    async initializeModules() {
+        // Initialize modules in dependency order
+        this.modules.themeManager = new ThemeManager();
+        this.modules.calendarManager = new CalendarManager();
+        this.modules.taskRenderer = new TaskRenderer();
+        this.modules.modalManager = new ModalManager();
+        
+        // EventHandler depends on other modules
+        this.modules.eventHandler = new EventHandler(
+            this.modules.modalManager,
+            this.modules.calendarManager,
+            this.modules.taskRenderer
+        );
+
+        // Initialize modules
+        this.modules.themeManager.init();
+        this.modules.modalManager.init();
+        this.modules.eventHandler.init();
+        
+        console.log('📦 Modules initialized');
+    }
+
+    /**
+     * Set up integrations between modules
+     */
+    setupModuleIntegrations() {
+        // Theme change listener
+        document.addEventListener('themeChanged', (e) => {
+            console.log(`🎨 Theme changed to: ${e.detail.theme}`);
+        });
+
+        // Task update listeners
+        this.setupTaskUpdateListeners();
+        
+        // Sidebar functionality
+        this.setupSidebarHandlers();
+    }
+
+    /**
+     * Set up task update event listeners
+     */
+    setupTaskUpdateListeners() {
+        // Listen for task changes and update UI accordingly
+        document.addEventListener('tasksUpdated', () => {
+            this.modules.eventHandler.refreshUI();
+        });
+    }
+
+    /**
+     * Set up sidebar functionality
+     */
+    setupSidebarHandlers() {
+        // Sidebar toggle
+        const hamburgerBtn = document.querySelector('.sidebar');
+        const sidebar = document.getElementById('sidebar');
+        
+        hamburgerBtn?.addEventListener('click', () => {
+            sidebar?.classList.toggle('active');
+        });
+
+        // Close sidebar on outside click
+        document.addEventListener('click', (e) => {
+            if (sidebar?.classList.contains('active') && 
+                !sidebar.contains(e.target) && 
+                !hamburgerBtn?.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        // Sidebar navigation
+        const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = link.getAttribute('href').substring(1);
+                
+                if (target === 'settings') {
+                    this.showSettings();
+                } else if (target === 'help') {
+                    this.showHelp();
+                } else if (['today', 'tomorrow', 'future'].includes(target)) {
+                    this.modules.eventHandler.showCategory(target);
+                    sidebar?.classList.remove('active');
+                }
+            });
+        });
+    }
+
+    /**
+     * Render initial UI state
+     */
+    renderInitialUI() {
+        // Render task lists
+        UIRenderer.renderTaskLists();
+        
+        // Show default category
+        this.modules.eventHandler.showCategory('today');
+        
+        // Render calendar if in future view
+        this.modules.eventHandler.renderCurrentCalendarView();
+        
+        console.log('🎨 Initial UI rendered');
+    }
+
+    /**
+     * Handle initialization errors gracefully
+     */
+    handleInitializationError(error) {
+        // Show user-friendly error message
+        const errorContainer = document.createElement('div');
+        errorContainer.className = 'init-error';
+        errorContainer.innerHTML = `
+            <div class="error-content">
+                <h2>⚠️ Initialization Error</h2>
+                <p>Dooing.Task failed to start properly. Please refresh the page.</p>
+                <button onclick="window.location.reload()">Refresh Page</button>
+                <details>
+                    <summary>Technical Details</summary>
+                    <pre>${error.message}</pre>
+                </details>
             </div>
         `;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--accent, #006d77);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 10000;
-            font-weight: 500;
-            max-width: 400px;
-            animation: slideIn 0.3s ease-out;
-        `;
         
+<<<<<<< Updated upstream
         // Add slide-in animation
         const style = document.createElement('style');
         style.textContent = `
@@ -647,29 +785,30 @@ const App = {
             return 'future';
         }
     },
+=======
+        document.body.appendChild(errorContainer);
+    }
 
-    showDateWarning(message) {
-        const futureDateGroup = document.getElementById('future-date-group');
-        let warningElement = document.getElementById('date-warning');
-        
-        if (!warningElement) {
-            warningElement = document.createElement('div');
-            warningElement.id = 'date-warning';
-            warningElement.style.cssText = `
-                color: #e28413;
-                font-size: 0.875rem;
-                margin-top: 0.5rem;
-                padding: 0.5rem;
-                background: rgba(226, 132, 19, 0.1);
-                border-radius: 4px;
-                border-left: 3px solid #e28413;
-            `;
-            futureDateGroup.appendChild(warningElement);
-        }
-        
-        warningElement.textContent = message;
-    },
+    /**
+     * Show settings modal/page
+     */
+    showSettings() {
+        // Implementation for settings view
+        console.log('Settings requested');
+        // Could open a settings modal or navigate to settings page
+    }
+>>>>>>> Stashed changes
 
+    /**
+     * Show help modal/page
+     */
+    showHelp() {
+        // Implementation for help view
+        console.log('Help requested');
+        // Could open a help modal or navigate to help page
+    }
+
+<<<<<<< Updated upstream
     toggleFutureView(viewType) {
         // Get the calendar containers
         const weekView = document.getElementById('week-calendar');
@@ -808,10 +947,113 @@ const App = {
             taskList.appendChild(li);
         });
     }
+=======
+    /**
+     * Get module instance
+     */
+    getModule(moduleName) {
+        return this.modules[moduleName];
+    }
+
+    /**
+     * Check if app is initialized
+     */
+    isReady() {
+        return this.isInitialized;
+    }
+
+    /**
+     * Cleanup and destroy app instance
+     */
+    destroy() {
+        // Clean up event listeners and resources
+        Object.values(this.modules).forEach(module => {
+            if (module.destroy && typeof module.destroy === 'function') {
+                module.destroy();
+            }
+        });
+        
+        this.isInitialized = false;
+        console.log('🧹 App cleaned up');
+    }
+
+    /**
+     * Validate that all required modules are properly loaded
+     */
+    validateModules() {
+        const requiredModules = [
+            'themeManager',
+            'calendarManager', 
+            'taskRenderer',
+            'modalManager',
+            'eventHandler'
+        ];
+
+        const missingModules = requiredModules.filter(moduleName => {
+            const module = this.modules[moduleName];
+            return !module || typeof module !== 'object';
+        });
+
+        if (missingModules.length > 0) {
+            throw new Error(`Missing or invalid modules: ${missingModules.join(', ')}`);
+        }
+
+        console.log('✅ All modules validated successfully');
+        return true;
+    }
+
+    /**
+     * Validate core dependencies
+     */
+    validateDependencies() {
+        // Check if TaskManager is available
+        if (!TaskManager || typeof TaskManager.init !== 'function') {
+            throw new Error('TaskManager is not properly loaded');
+        }
+
+        // Check if UIRenderer is available
+        if (!UIRenderer || typeof UIRenderer.renderTaskLists !== 'function') {
+            throw new Error('UIRenderer is not properly loaded');
+        }
+
+        // Check if PomodoroTimer is available
+        if (!PomodoroTimer || typeof PomodoroTimer !== 'function') {
+            throw new Error('PomodoroTimer is not properly loaded');
+        }
+
+        console.log('✅ All dependencies validated successfully');
+        return true;
+    }
+}
+
+// Create and initialize app instance
+const app = new DooingTaskApp();
+
+// Make app globally accessible
+window.App = app;
+
+// Add convenient methods to global App object
+window.App.openTaskModal = (category) => {
+    app.getModule('modalManager')?.open({ category });
+>>>>>>> Stashed changes
 };
 
-// Initialize the app when DOM is ready
+window.App.updateCalendarViews = () => {
+    app.getModule('eventHandler')?.renderCurrentCalendarView();
+};
+
+window.App.openEditTaskModal = (task) => {
+    app.getModule('modalManager')?.open({ mode: 'edit', task });
+};
+
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    App.init();
-    window.App = App; // Make App globally accessible
+    app.init();
 });
+
+// Handle page unload
+window.addEventListener('beforeunload', () => {
+    app.destroy();
+});
+
+export default app;

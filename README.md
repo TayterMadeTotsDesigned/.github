@@ -6,6 +6,7 @@ Dooing.Task is a productivity application that combines a task management system
 
 2. Core Features
 
+<<<<<<< Updated upstream
     A. Task Manager
         - Task CRUD Operations: 
             Create: Add tasks with a name, description, and due date
@@ -13,6 +14,15 @@ Dooing.Task is a productivity application that combines a task management system
             Update: Edit task details (name,description, Category,Due Date)
             Delete: Remove tasks from the list
             Completion: Mark tasks as complete
+=======
+### 📋 Task Management
+- **Smart Categorization**: Tasks are automatically categorized into Today, Tomorrow, Future Categories
+- **Full CRUD Operations**: Create, read, update, and delete tasks with comprehensive form validation
+- **Recurring Tasks**: Support for daily, weekly, and monthly recurring tasks with custom day selection
+- **Task Limits**: Daily limits (6 tasks for Today/Tomorrow) and weekly limits (42 tasks for Future)
+- **Auto-Movement**: Tasks automatically move between categories based on due dates
+- **Real-time Updates**: Instant UI updates when tasks are completed, edited, or deleted
+>>>>>>> Stashed changes
 
         - Task Categorization:
             Today: Tasks due on the current day (auto-assigned based on system time)

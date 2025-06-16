@@ -25,19 +25,19 @@
 
     <!-- Center section: Date + Arrow Navigation -->
     <div class="header-center">
-      <button id="left-arrow-btn" class="arrow-btn" aria-label="Previous Category">
+      <button id="left-arrow-btn" class="arrow-btn" aria-label="Previous Category" data-action="navigate-prev">
         <img src="scripts/svg/arrow-left-square-svgrepo-com.svg" alt="Previous">
       </button>
       <!-- Current Date Display  -->
       <div class="current-date" id="current-date">
         <span id="current-date-text">Jun 2025</span>
       </div>
-      <button id="right-arrow-btn" class="arrow-btn" aria-label="Next Category">
+      <button id="right-arrow-btn" class="arrow-btn" aria-label="Next Category" data-action="navigate-next">
         <img src="scripts/svg/arrow-right-square-svgrepo-com.svg" alt="Next">
       </button>
       <label for="theme-selector">Theme:</label>
       <select id="theme-selector" aria-label="Select theme"></select>
-      <button id="new-task-btn" class="new-task-btn" aria-label="New Task">
+      <button id="new-task-btn" class="new-task-btn" aria-label="New Task" data-action="add-task">
         <img src="scripts/svg/task-done-svgrepo-com.svg" alt="Add Task">
       </button>
     </div>
@@ -45,7 +45,7 @@
     <!-- Right section: Action Buttons -->
     <div class="header-right">
      
-      <button class="sidebar" aria-label="Toggle menu" type="button">
+      <button class="sidebar" aria-label="Toggle menu" type="button" data-action="toggle-sidebar">
        <span class="hamburger-bar"></span>
        <span class="hamburger-bar"></span>
       </button>
@@ -58,7 +58,7 @@
   <!-- Sidebar Navigation Menu -->
   <aside class="sidebar-menu" id="sidebar" aria-label="Sidebar Navigation">
     <div class="sidebar-header">
-      <button class="sidebar-close" aria-label="Close menu" type="button">
+      <button class="sidebar-close" aria-label="Close menu" type="button" data-action="toggle-sidebar">
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
       </button>
@@ -69,8 +69,8 @@
     <nav class="sidebar-nav">
       <!-- Sidebar Actions -->
       <div class="sidebar-actions">
-        <button id="settings-btn" class="settings-btn">Settings</button>
-        <button id="help-btn" class="help-btn">Help</button>
+        <button id="settings-btn" class="settings-btn" data-action="show-settings">Settings</button>
+        <button id="help-btn" class="help-btn" data-action="show-help">Help</button>
       </div>
       <!-- Navigation links -->
       <ul class="sidebar-nav-list">
@@ -134,25 +134,39 @@
   </section>
   <main class="main-container">
 
-    <div class="task-categories-container">
+    <div class="task-categories-container" role="main" aria-label="Task Categories">
 
       <!-- Today Tasks -->
-      <section class="task-category today-category active" id="today-section" data-category="today">
+      <section class="task-category today-category active" id="today-section" data-category="today" data-state="empty">
         <header class="category-header">
+<<<<<<< Updated upstream
           <h2 class="category-title">Today</h2>
           <span class="task-count" id="today-count">0 tasks</span>
         </header>
 
         <!-- Empty State -->
         <div class="empty-state" id="today-empty">
+=======
+          <div class="category-title">
+            <img src="scripts/svg/elephant-svgrepo-com.svg" alt="Today" class="category-icon">
+          </div>
+          <div class="category-meta">
+            <span class="category-date" id="today-date">06/16</span>
+            <span class="task-count" id="today-count">0 tasks</span>
+          </div>
+        </header>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="today-empty" data-state="empty" style="display: block;">
+>>>>>>> Stashed changes
           <div class="empty-icon"><img src="scripts/svg/elephant-svgrepo-com.svg" alt="No tasks"></div>
           <h3 class="empty-title">No tasks for today</h3>
-          <p class="empty-message">Either start your day or take a break</p>
-          <button class="add-task-btn" data-category="today">Add Task</button>
+          <p class="empty-message">Let's get Today started or is today a rest day?</p>
+          <button class="add-task-btn" data-category="today" data-action="add-task">Add Task</button>
         </div>
 
         <!-- Tasks List -->
-        <div class="tasks-container" id="today-tasks" style="display: none;">
+        <div class="tasks-container" id="today-tasks" data-state="has-tasks" style="display: none;">
           <ul class="tasks-list" id="today-tasks-list">
             <!-- Task items will be dynamically inserted here -->
           </ul>
@@ -160,22 +174,36 @@
       </section>
 
       <!-- Tomorrow Tasks -->
-      <section class="task-category tomorrow-category" id="tomorrow-section" data-category="tomorrow">
+      <section class="task-category tomorrow-category" id="tomorrow-section" data-category="tomorrow" data-state="empty">
         <header class="category-header">
+<<<<<<< Updated upstream
           <h2 class="category-title">Tomorrow</h2>
           <span class="task-count" id="tomorrow-count">0 tasks</span>
         </header>
 
         <!-- Empty State -->
         <div class="empty-state" id="tomorrow-empty">
+=======
+          <div class="category-title">
+            <img src="scripts/svg/giraffe-svgrepo-com.svg" alt="Tomorrow" class="category-icon">
+          </div>
+          <div class="category-meta">
+            <span class="category-date" id="tomorrow-date">06/17</span>
+            <span class="task-count" id="tomorrow-count">0 tasks</span>
+          </div>
+        </header>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="tomorrow-empty" data-state="empty" style="display: block;">
+>>>>>>> Stashed changes
           <div class="empty-icon"><img src="scripts/svg/giraffe-svgrepo-com.svg" alt="No tasks"></div>
           <h3 class="empty-title">No tasks for tomorrow</h3>
-          <p class="empty-message">Plan and Look ahead.. stay organized</p>
-          <button class="add-task-btn" data-category="tomorrow">Add Task</button>
+          <p class="empty-message">Plan and Look ahead... stay organized</p>
+          <button class="add-task-btn" data-category="tomorrow" data-action="add-task">Add Task</button>
         </div>
 
         <!-- Tasks List -->
-        <div class="tasks-container" id="tomorrow-tasks" style="display: none;">
+        <div class="tasks-container" id="tomorrow-tasks" data-state="has-tasks" style="display: none;">
           <ul class="tasks-list" id="tomorrow-tasks-list">
             <!-- Task items will be dynamically inserted here -->
           </ul>
@@ -183,7 +211,7 @@
       </section>
 
       <!-- Future Tasks -->
-      <section class="task-category future-category" id="future-section" data-category="future">
+      <section class="task-category future-category" id="future-section" data-category="future" data-state="calendar-view">
         <header class="category-header">
           <h2 class="category-title">Future</h2>
           <div class="future-controls">
@@ -192,6 +220,7 @@
           </div>
         </header>
 
+<<<<<<< Updated upstream
         <!-- Empty State -->
         <div class="empty-state" id="future-empty">
           <div class="empty-icon"><img src="scripts/svg/bee-svgrepo-com.svg" alt="No tasks"></div>
@@ -200,72 +229,74 @@
           <button class="add-task-btn" data-category="future">Add Task</button>
         </div>
 
+=======
+>>>>>>> Stashed changes
         <!-- Week Calendar View -->
         <div class="calendar-container week-view active" id="week-calendar">
           <div class="calendar-header">
             <button class="calendar-nav" id="prev-week" aria-label="Previous week">&lt;</button>
-            <h3 class="calendar-title" id="week-title">June 2-8, 2025</h3>
+            <h3 class="calendar-title" id="week-title">June 16-22, 2025</h3>
             <button class="calendar-nav" id="next-week" aria-label="Next week">&gt;</button>
           </div>
           <div class="week-grid">
-            <div class="week-day" data-date="2025-06-02">
+            <div class="week-day" data-date="2025-06-16">
               <div class="day-header">
                 <span class="day-name">Mon</span>
-                <span class="day-number">2</span>
+                <span class="day-number">16</span>
               </div>
               <div class="day-tasks">
                 <!-- Tasks for this day will be inserted here -->
               </div>
             </div>
-            <div class="week-day" data-date="2025-06-03">
+            <div class="week-day" data-date="2025-06-17">
               <div class="day-header">
                 <span class="day-name">Tue</span>
-                <span class="day-number">3</span>
+                <span class="day-number">17</span>
               </div>
               <div class="day-tasks">
                 <!-- Tasks for this day will be inserted here -->
               </div>
             </div>
-            <div class="week-day" data-date="2025-06-04">
+            <div class="week-day" data-date="2025-06-18">
               <div class="day-header">
                 <span class="day-name">Wed</span>
-                <span class="day-number">4</span>
+                <span class="day-number">18</span>
               </div>
               <div class="day-tasks">
                 <!-- Tasks for this day will be inserted here -->
               </div>
             </div>
-            <div class="week-day" data-date="2025-06-05">
+            <div class="week-day" data-date="2025-06-19">
               <div class="day-header">
                 <span class="day-name">Thu</span>
-                <span class="day-number">5</span>
+                <span class="day-number">19</span>
               </div>
               <div class="day-tasks">
                 <!-- Tasks for this day will be inserted here -->
               </div>
             </div>
-            <div class="week-day" data-date="2025-06-06">
+            <div class="week-day" data-date="2025-06-20">
               <div class="day-header">
                 <span class="day-name">Fri</span>
-                <span class="day-number">6</span>
+                <span class="day-number">20</span>
               </div>
               <div class="day-tasks">
                 <!-- Tasks for this day will be inserted here -->
               </div>
             </div>
-            <div class="week-day" data-date="2025-06-07">
+            <div class="week-day" data-date="2025-06-21">
               <div class="day-header">
                 <span class="day-name">Sat</span>
-                <span class="day-number">7</span>
+                <span class="day-number">21</span>
               </div>
               <div class="day-tasks">
                 <!-- Tasks for this day will be inserted here -->
               </div>
             </div>
-            <div class="week-day" data-date="2025-06-08">
+            <div class="week-day" data-date="2025-06-22">
               <div class="day-header">
                 <span class="day-name">Sun</span>
-                <span class="day-number">8</span>
+                <span class="day-number">22</span>
               </div>
               <div class="day-tasks">
                 <!-- Tasks for this day will be inserted here -->
@@ -695,9 +726,14 @@
 
 
 
+<<<<<<< Updated upstream
   <!-- JavaScript -->
   <script type="module" src="scripts/app.js"></script>
   
+=======
+  <!-- JavaScript Modules -->
+  <script type="module" src="scripts/app-new.js"></script>
+>>>>>>> Stashed changes
 
 </body>
 
