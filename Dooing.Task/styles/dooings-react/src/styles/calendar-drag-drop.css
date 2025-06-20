@@ -1,0 +1,45 @@
+/* Drag and Drop styles for Calendar */
+
+/* Task pill being dragged */
+.task-pill.dragging {
+  cursor: grabbing;
+  opacity: 0.5;
+  box-shadow: var(--shadow-md);
+  transform: scale(1.05);
+  transition: all var(--transition-fast) ease;
+}
+
+/* Day cell when task is being dragged over it */
+.calendar-day.drop-target {
+  background-color: rgba(var(--accent-rgb), 0.15);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+/* Ensure task pills are draggable */
+.task-pill {
+  cursor: grab;
+  position: relative;
+  user-select: none;
+  transition: all var(--transition-fast) ease;
+}
+
+.task-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Animation for successful drop */
+@keyframes successDrop {
+  0% { background-color: rgba(var(--success-rgb), 0.5); }
+  100% { background-color: transparent; }
+}
+
+.drop-success {
+  animation: successDrop 1s ease-out;
+}
+
+/* Feedback when dragging */
+.calendar-container:has(.task-pill.dragging) .calendar-day {
+  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease, box-shadow var(--transition-fast) ease;
+}

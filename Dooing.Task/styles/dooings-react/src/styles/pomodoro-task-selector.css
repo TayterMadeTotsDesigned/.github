@@ -1,0 +1,316 @@
+/* Skeuomorphic Pomodoro Task Selector Component */
+
+.pomodoro-task-selector {
+  background: linear-gradient(
+    145deg,
+    #f8fafc 0%,
+    #f1f5f9 25%,
+    #e2e8f0 50%,
+    #f1f5f9 75%,
+    #f8fafc 100%
+  );
+  border: 2px solid rgba(148, 163, 184, 0.3);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.1),
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(148, 163, 184, 0.2);
+  transition: all var(--duration-medium) var(--ease-standard);
+  position: relative;
+  overflow: hidden;
+}
+
+.pomodoro-task-selector::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 30%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent 50%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.pomodoro-task-selector:hover {
+  box-shadow: 
+    0 8px 16px rgba(0, 0, 0, 0.15),
+    inset 0 1px 3px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 3px rgba(148, 163, 184, 0.15);
+}
+
+/* Skeuomorphic Header */
+.task-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: inset 0 -1px 1px rgba(148, 163, 184, 0.1);
+  position: relative;
+  z-index: 2;
+}
+
+.task-selector-header h4 {
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.clear-task-btn {
+  background: linear-gradient(
+    145deg,
+    rgba(220, 38, 38, 0.1) 0%,
+    rgba(220, 38, 38, 0.05) 100%
+  );
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: var(--danger);
+  transition: all var(--duration-short) var(--ease-standard);
+  box-shadow: 
+    0 2px 4px rgba(220, 38, 38, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 1px rgba(220, 38, 38, 0.1);
+  position: relative;
+  z-index: 3;
+}
+
+.clear-task-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.clear-task-btn:hover {
+  background: linear-gradient(
+    145deg,
+    rgba(220, 38, 38, 0.2) 0%,
+    rgba(220, 38, 38, 0.1) 100%
+  );
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 8px rgba(220, 38, 38, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px rgba(220, 38, 38, 0.15);
+}
+  transform: scale(1.1);
+}
+
+/* No Tasks State */
+.no-tasks-message {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--text-muted);
+}
+
+.no-tasks-message p {
+  font-size: 1.1rem;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text);
+}
+
+.suggestion-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Active Task Display */
+.active-task-display {
+  background: rgba(var(--accent-rgb), 0.05);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+}
+
+.task-info {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.task-priority,
+.task-context {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.task-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 var(--spacing-xs) 0;
+  line-height: 1.3;
+}
+
+.task-description {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.task-progress {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid rgba(var(--accent-rgb), 0.1);
+}
+
+.pomodoro-count {
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Task Selection Area */
+.selection-prompt {
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: var(--spacing-md);
+  font-size: 0.95rem;
+}
+
+.task-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.task-option {
+  background: var(--bg);
+  border: 1px solid rgba(var(--accent-rgb), 0.1);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  transition: all var(--duration-short) var(--ease-standard);
+  text-align: left;
+  width: 100%;
+}
+
+.task-option:hover {
+  background: rgba(var(--accent-rgb), 0.05);
+  border-color: var(--accent);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
+}
+
+.task-option.priority-high {
+  border-left: 3px solid var(--danger);
+}
+
+.task-option.priority-medium {
+  border-left: 3px solid var(--warning);
+}
+
+.task-option.priority-low {
+  border-left: 3px solid var(--success);
+}
+
+.task-option-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.task-option .task-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.task-option .task-description {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.3;
+}
+
+.task-pomodoros {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.more-tasks-indicator {
+  text-align: center;
+  padding: var(--spacing-sm);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  background: rgba(var(--accent-rgb), 0.05);
+  border-radius: var(--border-radius);
+  border: 1px dashed rgba(var(--accent-rgb), 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pomodoro-task-selector {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .task-selector-header h4 {
+    font-size: 1rem;
+  }
+  
+  .clear-task-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+  }
+  
+  .task-option {
+    padding: var(--spacing-sm);
+    font-size: 0.9rem;
+  }
+  
+  .task-option:hover {
+    transform: translateX(2px);
+  }
+}
+
+@media (max-width: 480px) {
+  .task-selector-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .clear-task-btn {
+    align-self: flex-end;
+  }
+  
+  .task-option {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+}

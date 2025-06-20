@@ -1,5 +1,4 @@
 // ModalManager.js - Handles all modal interactions and form management
-import { generateId } from '../utils.js';
 
 class ModalManager {
     constructor() {
@@ -56,7 +55,6 @@ class ModalManager {
         const recurringCheckbox = document.getElementById('recurring-task');
         const recurrenceOptions = document.getElementById('recurrence-options');
         const recurrenceTypes = document.getElementsByName('recurrence-type');
-        const daySelection = document.getElementById('day-selection');
 
         recurringCheckbox?.addEventListener('change', (e) => {
             recurrenceOptions.style.display = e.target.checked ? 'block' : 'none';
@@ -67,7 +65,10 @@ class ModalManager {
 
         recurrenceTypes.forEach(radio => {
             radio.addEventListener('change', (e) => {
-                daySelection.style.display = e.target.value === 'weekly' ? 'block' : 'none';
+                const daysGroup = document.getElementById('recurrence-days-group');
+                if (daysGroup) {
+                    daysGroup.style.display = e.target.value === 'weekly' ? 'block' : 'none';
+                }
             });
         });
     }
@@ -159,7 +160,7 @@ class ModalManager {
         // Reset visibility states
         document.getElementById('future-date-group').style.display = 'none';
         document.getElementById('recurrence-options').style.display = 'none';
-        document.getElementById('day-selection').style.display = 'none';
+        document.getElementById('recurrence-days-group').style.display = 'none';
         
         // Update UI text
         document.getElementById('submit-text').textContent = 'Add Task';
@@ -198,9 +199,9 @@ class ModalManager {
                 recurrenceRadio.checked = true;
                 
                 if (task.recurrence.type === 'weekly' && task.recurrence.days) {
-                    document.getElementById('day-selection').style.display = 'block';
+                    document.getElementById('recurrence-days-group').style.display = 'block';
                     task.recurrence.days.forEach(day => {
-                        const dayCheckbox = document.querySelector(`input[name="days"][value="${day}"]`);
+                        const dayCheckbox = document.querySelector(`input[name="recurrence-days"][value="${day}"]`);
                         if (dayCheckbox) dayCheckbox.checked = true;
                     });
                 }
@@ -254,7 +255,7 @@ class ModalManager {
                 enabled: true,
                 type: data['recurrence-type'] || 'daily',
                 days: data['recurrence-type'] === 'weekly' ? 
-                    formData.getAll('days') : null
+                    formData.getAll('recurrence-days').map(day => parseInt(day)) : null
             };
         } else {
             data.recurrence = { enabled: false };
@@ -263,7 +264,7 @@ class ModalManager {
         // Clean up form-specific fields
         delete data.recurring;
         delete data['recurrence-type'];
-        delete data.days;
+        delete data['recurrence-days'];
         
         return data;
     }
@@ -305,7 +306,7 @@ class ModalManager {
         // Validate weekly recurrence
         if (data.recurrence.enabled && data.recurrence.type === 'weekly') {
             if (!data.recurrence.days || data.recurrence.days.length === 0) {
-                errors.push({ field: 'day-selection', message: 'Please select at least one day for weekly recurrence' });
+                errors.push({ field: 'recurrence-days-group', message: 'Please select at least one day for weekly recurrence' });
             }
         }
 
@@ -351,10 +352,10 @@ class ModalManager {
         const recurrenceTypes = document.getElementsByName('recurrence-type');
         recurrenceTypes.forEach(radio => radio.checked = false);
         
-        const dayCheckboxes = document.querySelectorAll('input[name="days"]');
+        const dayCheckboxes = document.querySelectorAll('input[name="recurrence-days"]');
         dayCheckboxes.forEach(checkbox => checkbox.checked = false);
         
-        document.getElementById('day-selection').style.display = 'none';
+        document.getElementById('recurrence-days-group').style.display = 'none';
     }
 }
 

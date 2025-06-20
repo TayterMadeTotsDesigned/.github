@@ -147,31 +147,71 @@ class TaskRenderer {
     }
 
     /**
+     * Update week title
+     */
+    updateWeekTitle(weekStart) {
+        const weekTitle = document.getElementById('week-title');
+        if (weekTitle) {
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            
+            const startMonth = weekStart.toLocaleDateString('en-US', { month: 'short' });
+            const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+            const year = weekStart.getFullYear();
+            
+            if (startMonth === endMonth) {
+                weekTitle.textContent = `${startMonth} ${weekStart.getDate()}-${weekEnd.getDate()}, ${year}`;
+            } else {
+                weekTitle.textContent = `${startMonth} ${weekStart.getDate()} - ${endMonth} ${weekEnd.getDate()}, ${year}`;
+            }
+        }
+    }
+
+    /**
+     * Update month title
+     */
+    updateMonthTitle(year, month) {
+        const monthTitle = document.getElementById('month-title');
+        if (monthTitle) {
+            const monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            monthTitle.textContent = `${monthNames[month]} ${year}`;
+        }
+    }
+
+    /**
+     * Render tasks within a day container
+     */
+    renderDayTasks(dayContainer, tasks) {
+        const dayTasksContainer = dayContainer.querySelector('.day-tasks');
+        if (!dayTasksContainer) return;
+
+        // Clear existing tasks
+        dayTasksContainer.innerHTML = '';
+
+        // Add tasks
+        tasks.forEach(task => {
+            const taskElement = this.createCalendarTaskElement(task);
+            dayTasksContainer.appendChild(taskElement);
+        });
+    }
+
+    /**
      * Create a calendar task element
      */
     createCalendarTaskElement(task) {
         const taskElement = document.createElement('div');
-        taskElement.className = `calendar-task ${task.isVirtualRecurring ? 'recurring-task' : ''} ${task.completed ? 'completed' : ''}`;
+        taskElement.className = `calendar-task ${task.completed ? 'completed' : ''}`;
         taskElement.dataset.taskId = task.id;
-        taskElement.innerHTML = `
-            <span class="task-indicator ${task.priority ? `priority-${task.priority}` : ''}"></span>
-            <span class="task-name">${this.escapeHtml(task.name)}</span>
-        `;
         
-        if (task.isVirtualRecurring) {
-            taskElement.title = `Recurring: ${task.name}`;
-        }
+        taskElement.innerHTML = `
+            <span class="task-name">${this.escapeHtml(task.name)}</span>
+            ${task.completed ? '<span class="task-check">✓</span>' : ''}
+        `;
 
         return taskElement;
-    }
-
-    /**
-     * Create task count element for calendar
-     */
-    createTaskCountElement() {
-        const countElement = document.createElement('div');
-        countElement.className = 'task-count';
-        return countElement;
     }
 
     /**
@@ -299,16 +339,47 @@ class TaskRenderer {
         const weekContainer = document.getElementById('week-calendar');
         if (!weekContainer) return;
 
-        const days = this.generateWeekDays(weekStart);
-        weekContainer.innerHTML = this.generateWeekHTML(days);
+        // Update week title
+        this.updateWeekTitle(weekStart);
 
-        // Render tasks for each day
-        days.forEach(day => {
-            const dayTasks = tasks.filter(task => {
-                const taskDate = new Date(task.date || task.dueDate);
-                return this.isSameDate(day, taskDate);
-            });
-            this.renderCalendarTasks(day, dayTasks);
+        // Get all week day containers
+        const weekDays = weekContainer.querySelectorAll('.week-day');
+        
+        // Generate the days for this week
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+            const day = new Date(weekStart);
+            day.setDate(weekStart.getDate() + i);
+            days.push(day);
+        }
+
+        // Update each day container
+        weekDays.forEach((dayContainer, index) => {
+            const day = days[index];
+            if (day) {
+                // Update the date attribute
+                dayContainer.dataset.date = day.toISOString().split('T')[0];
+                
+                // Update day header
+                const dayNameElement = dayContainer.querySelector('.day-name');
+                const dayNumberElement = dayContainer.querySelector('.day-number');
+                
+                if (dayNameElement) {
+                    dayNameElement.textContent = this.getDayNameShort(day.getDay());
+                }
+                if (dayNumberElement) {
+                    dayNumberElement.textContent = day.getDate();
+                }
+
+                // Filter tasks for this day
+                const dayTasks = tasks.filter(task => {
+                    const taskDate = new Date(task.date || task.dueDate);
+                    return this.isSameDate(day, taskDate);
+                });
+
+                // Render tasks in this day
+                this.renderDayTasks(dayContainer, dayTasks);
+            }
         });
     }
 
@@ -319,18 +390,49 @@ class TaskRenderer {
         const monthContainer = document.getElementById('month-calendar');
         if (!monthContainer) return;
 
-        const days = this.generateMonthDays(year, month);
-        monthContainer.innerHTML = this.generateMonthHTML(days, month, year);
+        // Update month title
+        this.updateMonthTitle(year, month);
 
-        // Render tasks for each day
-        days.forEach(({ date, isCurrentMonth }) => {
+        // Generate calendar days for the month
+        const monthDays = this.generateMonthDays(year, month);
+        
+        // Get or create the month days grid
+        const monthDaysGrid = monthContainer.querySelector('#month-days-grid');
+        if (monthDaysGrid) {
+            this.populateMonthGrid(monthDaysGrid, monthDays, tasks);
+        }
+    }
+
+    /**
+     * Populate month grid with days and tasks
+     */
+    populateMonthGrid(gridContainer, monthDays, tasks) {
+        // Clear existing content
+        gridContainer.innerHTML = '';
+
+        // Create day elements
+        monthDays.forEach(({ date, isCurrentMonth }) => {
+            const dayElement = document.createElement('div');
+            dayElement.className = `month-day ${isCurrentMonth ? 'current-month' : 'other-month'}`;
+            dayElement.dataset.date = date.toISOString().split('T')[0];
+
+            dayElement.innerHTML = `
+                <div class="day-number">${date.getDate()}</div>
+                <div class="day-tasks"></div>
+            `;
+
             if (isCurrentMonth) {
+                // Filter tasks for this day
                 const dayTasks = tasks.filter(task => {
                     const taskDate = new Date(task.date || task.dueDate);
                     return this.isSameDate(date, taskDate);
                 });
-                this.renderCalendarTasks(date, dayTasks);
+
+                // Add tasks to the day
+                this.renderDayTasks(dayElement, dayTasks);
             }
+
+            gridContainer.appendChild(dayElement);
         });
     }
 
@@ -391,6 +493,42 @@ class TaskRenderer {
         `;
     }
 
+    /**
+     * Generate calendar days for a month (42 days including prev/next month)
+     */
+    generateMonthDays(year, month) {
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startDay = firstDay.getDay();
+        
+        const days = [];
+        
+        // Previous month days to fill grid
+        for (let i = startDay - 1; i >= 0; i--) {
+            const day = new Date(firstDay);
+            day.setDate(day.getDate() - i - 1);
+            days.push({ date: day, isCurrentMonth: false });
+        }
+        
+        // Current month days
+        for (let i = 1; i <= daysInMonth; i++) {
+            days.push({ 
+                date: new Date(year, month, i), 
+                isCurrentMonth: true 
+            });
+        }
+        
+        // Next month days to complete 6-week grid
+        const remainingCells = 42 - days.length;
+        for (let i = 1; i <= remainingCells; i++) {
+            const day = new Date(year, month + 1, i);
+            days.push({ date: day, isCurrentMonth: false });
+        }
+        
+        return days;
+    }
+
     // Utility methods
     escapeHtml(text) {
         if (!text) return '';
@@ -406,66 +544,6 @@ class TaskRenderer {
     isToday(date) {
         const today = new Date();
         return date.toDateString() === today.toDateString();
-    }
-
-    isSameDate(date1, date2) {
-        return date1.toDateString() === date2.toDateString();
-    }
-
-    getDayName(dayIndex) {
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        return days[dayIndex];
-    }
-
-    getMonthName(monthIndex) {
-        const months = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-        ];
-        return months[monthIndex];
-    }
-
-    generateWeekDays(startDate) {
-        const days = [];
-        for (let i = 0; i < 7; i++) {
-            const day = new Date(startDate);
-            day.setDate(startDate.getDate() + i);
-            days.push(day);
-        }
-        return days;
-    }
-
-    generateMonthDays(year, month) {
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startDay = firstDay.getDay();
-        
-        const days = [];
-        
-        // Previous month days
-        for (let i = startDay - 1; i >= 0; i--) {
-            const day = new Date(firstDay);
-            day.setDate(day.getDate() - i - 1);
-            days.push({ date: day, isCurrentMonth: false });
-        }
-        
-        // Current month days
-        for (let i = 1; i <= daysInMonth; i++) {
-            days.push({ 
-                date: new Date(year, month, i), 
-                isCurrentMonth: true 
-            });
-        }
-        
-        // Next month days
-        const remainingCells = 42 - days.length;
-        for (let i = 1; i <= remainingCells; i++) {
-            const day = new Date(year, month + 1, i);
-            days.push({ date: day, isCurrentMonth: false });
-        }
-        
-        return days;
     }
 }
 

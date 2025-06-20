@@ -1,0 +1,459 @@
+/* ===== Main CSS File ===== */
+/* This file imports all modular CSS components for the Dooing.Task application */
+
+/* Core theme and base styles */
+@import './themes.css';
+
+/* Animation system */
+@import './animations.css';
+
+/* Component-specific styles */
+@import './hero.css';
+@import './header.css';
+@import './task-categories.css';
+@import './task-list.css';
+@import './modal.css';
+@import './calendar-views.css';
+@import './calendar.css';
+@import './calendar-drag-drop.css';
+@import './task-drag-warning.css';
+@import './pomodoro.css';
+@import './pomodoro-task-selector.css';
+@import './pomodoro-suggestions.css';
+@import './sidebar.css';
+
+/* Enhanced Global Animations */
+@keyframes glassCardFloat {
+    0%, 100% { 
+        transform: translateY(0px) rotateX(0deg);
+        will-change: var(--will-change-transform);
+    }
+    50% { 
+        transform: translateY(-5px) rotateX(1deg);
+    }
+}
+
+@keyframes smoothSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+        will-change: var(--will-change-transform), var(--will-change-opacity);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        will-change: var(--will-change-auto);
+    }
+}
+
+@keyframes smoothFadeIn {
+    from { 
+        opacity: 0;
+        will-change: var(--will-change-opacity);
+    }
+    to { 
+        opacity: 1;
+        will-change: var(--will-change-auto);
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% { 
+        box-shadow: 0 0 5px rgba(var(--accent-rgb), 0.3);
+    }
+    50% { 
+        box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.6);
+    }
+}
+
+@keyframes slideInFromBottom {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+
+/* Enhanced Utility Classes */
+.smooth-transition { 
+    transition: all var(--duration-medium) var(--ease-standard);
+}
+.fast-transition { 
+    transition: all var(--duration-short) var(--ease-standard);
+}
+.micro-transition { 
+    transition: all var(--duration-micro) var(--ease-standard);
+}
+.slow-transition { 
+    transition: all var(--duration-long) var(--ease-decelerate);
+}
+
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--accent-rgb), 0.1);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: all var(--duration-medium) var(--ease-standard);
+}
+
+.glass-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+    border-color: rgba(var(--accent-rgb), 0.2);
+}
+
+.fade-in {
+    animation: smoothFadeIn var(--duration-medium) var(--ease-decelerate);
+}
+
+.slide-in {
+    animation: smoothSlideIn var(--duration-medium) var(--ease-decelerate);
+}
+
+.scale-in {
+    animation: scaleIn var(--duration-short) var(--ease-bounce);
+}
+
+.shimmer-effect {
+    background: linear-gradient(90deg, 
+        rgba(var(--accent-rgb), 0.1) 0%, 
+        rgba(var(--accent-rgb), 0.3) 50%, 
+        rgba(var(--accent-rgb), 0.1) 100%);
+    background-size: 200px 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* Enhanced Button System */
+.btn {
+    border: none;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--duration-short) var(--ease-standard);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    text-decoration: none;
+    font-size: 0.9rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.2), 
+        transparent);
+    transition: left var(--duration-medium) var(--ease-standard);
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:focus {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    transform: scale(1.02);
+}
+
+.btn:active {
+    transform: scale(0.98);
+    transition: transform var(--duration-micro) var(--ease-sharp);
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+    background: rgba(var(--accent-rgb), 0.8);
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: var(--card-bg);
+    color: var(--text);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--hover-bg);
+    border-color: var(--accent);
+    transform: translateY(-1px) scale(1.02);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: var(--danger-dark);
+    transform: translateY(-1px) scale(1.02);
+}
+
+/* Layout and responsive adjustments */
+.app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Dual-panel layout for task/pomodoro view */
+.dual-panel-layout {
+    display: grid;
+    grid-template-columns: minmax(400px, 1fr) minmax(400px, 1fr);
+    gap: 3rem;
+    align-items: stretch;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: var(--spacing-xl);
+    position: relative;
+    /* Enhanced glassmorphic background */
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(var(--accent-rgb), 0.02) 50%,
+        transparent 100%
+    );
+    border-radius: 32px;
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.05),
+        0 8px 32px rgba(var(--accent-rgb), 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transition: all var(--duration-medium) var(--ease-standard);
+    will-change: var(--will-change-transform);
+    min-height: 600px;
+}
+
+/* Enhanced dual-panel container alignment */
+.dual-panel-layout > .task-category,
+.dual-panel-layout > .pomodoro-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 500px;
+    align-self: stretch;
+}
+
+.dual-panel-layout .task-category .category-header {
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+.dual-panel-layout .task-category .task-list {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: var(--spacing-md);
+}
+
+.dual-panel-layout .pomodoro-container .pomodoro-glass-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+/* Improved responsive spacing for dual-panel */
+@media (max-width: 1024px) {
+    .dual-panel-layout .task-category,
+    .dual-panel-layout .pomodoro-container {
+        min-height: 450px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dual-panel-layout .task-category,
+    .dual-panel-layout .pomodoro-container {
+        min-height: auto;
+        height: auto;
+    }
+}
+
+/* Small tablet responsive layout (480px to 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .dual-panel-layout {
+        padding: var(--spacing-lg) var(--spacing-md);
+        gap: var(--spacing-xl);
+    }
+    
+    .dual-panel-layout .calendar-container {
+        height: calc(100vh - 180px);
+        max-height: 500px;
+        min-height: 350px;
+    }
+    
+    .dual-panel-layout .task-category {
+        padding: var(--spacing-lg);
+    }
+}
+
+/* Enhanced tablet landscape layout (769px to 1023px) */
+@media (min-width: 769px) and (max-width: 1023px) {
+    .dual-panel-layout {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xl);
+        padding: var(--spacing-lg);
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .dual-panel-layout .calendar-container {
+        height: calc(100vh - 160px);
+        max-height: 550px;
+        min-height: 400px;
+    }
+    
+    /* Option to show side-by-side on larger tablets in landscape */
+    @media (orientation: landscape) {
+        .dual-panel-layout {
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+            max-width: 1000px;
+        }
+    }
+}
+
+/* Ultrawide screen optimizations */
+@media (min-width: 1440px) {
+    .dual-panel-layout {
+        max-width: 1800px;
+        gap: 4rem;
+        grid-template-columns: minmax(450px, 1fr) minmax(450px, 1fr);
+        padding: calc(var(--spacing-xl) * 1.5);
+        border-radius: 36px;
+        box-shadow: 
+            0 24px 80px rgba(0, 0, 0, 0.08),
+            0 12px 40px rgba(var(--accent-rgb), 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        min-height: 700px;
+    }
+}
+
+@media (min-width: 2000px) {
+    .dual-panel-layout {
+        max-width: 2000px;
+        gap: 5rem;
+        grid-template-columns: minmax(500px, 1fr) minmax(500px, 1fr);
+        border-radius: 40px;
+        min-height: 800px;
+    }
+}
+
+/* Enhanced Mobile responsive layout (max-width: 768px) */
+@media (max-width: 768px) {
+    .dual-panel-layout {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+        padding: var(--spacing-md);
+        border-radius: 20px;
+        min-height: auto;
+        max-width: 100%;
+        margin: 0 auto;
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(var(--accent-rgb), 0.03) 100%
+        );
+    }
+    
+    .dual-panel-layout .task-category,
+    .dual-panel-layout .pomodoro-container {
+        min-height: auto;
+        height: auto;
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .dual-panel-layout .task-category {
+        order: 1;
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .dual-panel-layout .pomodoro-container {
+        order: 2;
+        position: static;
+        max-height: none;
+    }
+    
+    /* Improve calendar in mobile layout */
+    .dual-panel-layout .calendar-container {
+        height: calc(100vh - 200px);
+        max-height: 450px;
+        min-height: 300px;
+    }
+}
+
+/* Medium screen adjustments */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .dual-panel-layout {
+        gap: 2rem;
+        padding: var(--spacing-lg);
+        grid-template-columns: minmax(350px, 1fr) minmax(350px, 1fr);
+        min-height: 550px;
+    }
+}
+
+/* Focus and accessibility */
+*:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* Print styles */
+@media print {
+    .header,
+    .pomodoro-container,
+    .task-actions,
+    .modal {
+        display: none !important;
+    }
+    
+    .task-item {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}

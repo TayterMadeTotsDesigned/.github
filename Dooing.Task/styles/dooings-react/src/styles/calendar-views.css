@@ -1,0 +1,397 @@
+/* ===== calendar-views.css ===== */
+.calendar-container {
+    width: 100%;
+    max-width: 100%;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--duration-medium) var(--ease-standard);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    height: calc(100vh - 300px); /* Fit within viewport */
+    max-height: 600px;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    container-type: inline-size; /* Enable modern container queries */
+}
+
+/* Enhanced responsive adjustments */
+@media (max-width: 768px) {
+    .calendar-container {
+        height: calc(100vh - 250px);
+        max-height: 500px;
+        min-height: 350px;
+        padding: var(--spacing-sm);
+        margin-top: var(--spacing-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .calendar-container {
+        height: calc(100vh - 200px);
+        max-height: 400px;
+        min-height: 320px;
+        padding: var(--spacing-xs);
+    }
+}
+
+/* Ultrawide screen adjustments for calendar */
+@media (min-width: 1440px) {
+    .calendar-container {
+        max-height: 700px;
+        min-height: 500px;
+        height: calc(100vh - 250px);
+        padding: var(--spacing-lg);
+    }
+}
+
+@media (min-width: 2000px) {
+    .calendar-container {
+        max-height: 800px;
+        min-height: 600px;
+    }
+}
+
+.calendar-container:not(.active) {
+    display: none;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--accent);
+    color: white;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    margin: calc(-1 * var(--spacing-md)) calc(-1 * var(--spacing-md)) var(--spacing-md) calc(-1 * var(--spacing-md));
+    flex-shrink: 0;
+}
+
+.calendar-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+    color: white;
+}
+
+.calendar-nav {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all var(--duration-short) var(--ease-standard);
+}
+
+.calendar-nav:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.week-view {
+    animation: slideInFromRight var(--duration-medium) var(--ease-decelerate) forwards;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--spacing-xs);
+    height: 100%;
+    flex: 1;
+}
+
+/* Ultrawide screen adjustments for week grid */
+@media (min-width: 1440px) {
+    .week-grid {
+        gap: var(--spacing-sm);
+    }
+}
+
+@media (min-width: 1800px) {
+    .week-grid {
+        gap: var(--spacing-md);
+    }
+}
+
+.week-day {
+    background: var(--card-bg);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-xs);
+    display: flex;
+    flex-direction: column;
+    transition: all var(--duration-short) var(--ease-standard);
+    overflow: hidden;
+}
+
+.week-day:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+}
+
+.week-day.today {
+    border-color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.05);
+}
+
+.day-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+}
+
+.day-name {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text);
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.day-number {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 2px;
+}
+
+.week-day.today .day-number {
+    color: var(--accent);
+}
+
+.day-tasks {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Month View Styles */
+.month-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.month-grid {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+}
+
+.month-day-names {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: rgba(0, 0, 0, 0.1);
+    margin-bottom: 1px;
+    flex-shrink: 0;
+}
+
+/* Ultrawide screen adjustments for month grid */
+@media (min-width: 1440px) {
+    .month-day-names {
+        gap: 2px;
+        margin-bottom: 2px;
+    }
+}
+
+@media (min-width: 1800px) {
+    .month-day-names {
+        gap: 3px;
+        margin-bottom: 3px;
+    }
+}
+
+.month-day-names .day-name {
+    background: var(--card-bg);
+    padding: var(--spacing-xs);
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text);
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.month-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: rgba(0, 0, 0, 0.1);
+    flex: 1;
+    height: 100%;
+}
+
+.month-day {
+    background: var(--card-bg);
+    padding: var(--spacing-xs);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all var(--duration-short) var(--ease-standard);
+    position: relative;
+    overflow: hidden;
+}
+
+.month-day:hover {
+    background: rgba(var(--accent-rgb), 0.05);
+}
+
+.month-day.today {
+    background: rgba(var(--accent-rgb), 0.1);
+}
+
+.month-day.other-month {
+    opacity: 0.3;
+}
+
+.month-day .day-number {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: var(--spacing-xs);
+    flex-shrink: 0;
+}
+
+.month-day.today .day-number {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.month-day .day-tasks {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* Task items in calendar */
+.calendar-task {
+    background: var(--accent);
+    color: white;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 0.65rem;
+    line-height: 1.1;
+    cursor: pointer;
+    transition: all var(--duration-short) var(--ease-standard);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.calendar-task:hover {
+    background: var(--accent);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.calendar-task.completed {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+/* View toggle buttons */
+.future-controls {
+    display: flex;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 6px;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--accent-rgb), 0.1);
+}
+
+.view-toggle {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all var(--duration-medium) var(--ease-standard);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.3px;
+    min-width: 80px;
+}
+
+.view-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left var(--duration-long) var(--ease-standard);
+}
+
+.view-toggle:hover::before {
+    left: 100%;
+}
+
+.view-toggle:hover:not(.active) {
+    background: rgba(var(--accent-rgb), 0.1);
+    transform: translateY(-1px);
+    color: var(--accent);
+}
+
+.view-toggle.active {
+    background: linear-gradient(135deg, var(--accent) 0%, rgba(var(--accent-rgb), 0.8) 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.3);
+    transform: translateY(-2px);
+}
+
+.view-toggle.active::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.view-toggle:active {
+    transform: translateY(0) scale(0.98);
+}

@@ -1,0 +1,359 @@
+/* ===== Task Categories Styling ===== */
+
+/* Main task category container */
+.task-category {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(255, 255, 255, 0.8) 50%,
+        rgba(var(--accent-rgb), 0.08) 100%
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 24px;
+    padding: var(--spacing-xl);
+    margin-bottom: 0; /* Remove margin in dual panel */
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        0 4px 16px rgba(var(--accent-rgb), 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transition: all var(--duration-medium) var(--ease-standard);
+    position: relative;
+    overflow: hidden;
+    will-change: var(--will-change-transform);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 500px;
+}
+
+/* Glassmorphic shimmer effect */
+.task-category::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+    );
+    transition: left var(--duration-complex) var(--ease-standard);
+    z-index: 1;
+}
+
+.task-category:hover::before {
+    left: 100%;
+}
+
+/* Enhanced hover state */
+.task-category:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 
+        0 16px 48px rgba(0, 0, 0, 0.12),
+        0 8px 24px rgba(var(--accent-rgb), 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border-color: rgba(var(--accent-rgb), 0.3);
+}
+
+/* Active state with enhanced glassmorphism */
+.task-category.active {
+    background: linear-gradient(
+        135deg,
+        rgba(var(--accent-rgb), 0.15) 0%,
+        rgba(255, 255, 255, 0.95) 30%,
+        rgba(var(--accent-rgb), 0.1) 100%
+    );
+    border-color: rgba(var(--accent-rgb), 0.4);
+    box-shadow: 
+        0 12px 40px rgba(var(--accent-rgb), 0.15),
+        0 6px 20px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+}
+
+/* Category header styling */
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    position: relative;
+    z-index: 2;
+}
+
+.category-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    background: linear-gradient(
+        135deg,
+        var(--accent) 0%,
+        rgba(var(--accent-rgb), 0.8) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    letter-spacing: -0.5px;
+}
+
+.task-count {
+    background: linear-gradient(
+        135deg,
+        rgba(var(--accent-rgb), 0.1) 0%,
+        rgba(var(--accent-rgb), 0.05) 100%
+    );
+    color: var(--accent);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.1);
+}
+
+/* Task list container */
+.task-list {
+    position: relative;
+    z-index: 2;
+    min-height: 200px;
+}
+
+/* Empty state styling */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-xxl) var(--spacing-lg);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(var(--accent-rgb), 0.03) 100%
+    );
+    border-radius: 16px;
+    border: 1px dashed rgba(var(--accent-rgb), 0.2);
+    backdrop-filter: blur(10px);
+    transition: all var(--duration-medium) var(--ease-standard);
+}
+
+.empty-state:hover {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.8) 0%,
+        rgba(var(--accent-rgb), 0.05) 100%
+    );
+    border-color: rgba(var(--accent-rgb), 0.3);
+    transform: translateY(-2px);
+}
+
+.empty-icon {
+    margin-bottom: var(--spacing-md);
+    opacity: 0.7;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.empty-icon img {
+    width: 48px;
+    height: 48px;
+    opacity: 0.6;
+}
+
+.empty-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: var(--spacing-sm);
+    letter-spacing: -0.3px;
+}
+
+.empty-message {
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-lg);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Add task button */
+.add-task-btn {
+    background: linear-gradient(
+        135deg,
+        var(--accent) 0%,
+        rgba(var(--accent-rgb), 0.9) 100%
+    );
+    color: white;
+    border: none;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all var(--duration-medium) var(--ease-standard);
+    box-shadow: 
+        0 4px 16px rgba(var(--accent-rgb), 0.3),
+        0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    will-change: var(--will-change-transform);
+}
+
+.add-task-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transition: left var(--duration-medium) var(--ease-standard);
+}
+
+.add-task-btn:hover::before {
+    left: 100%;
+}
+
+.add-task-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 
+        0 8px 24px rgba(var(--accent-rgb), 0.4),
+        0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.add-task-btn:active {
+    transform: translateY(0) scale(1.02);
+    transition-duration: var(--duration-micro);
+}
+
+/* Animation entrance effects */
+.task-category.slide-in-left {
+    animation: slideInLeft var(--duration-medium) var(--ease-decelerate) forwards;
+}
+
+.task-category.slide-in-right {
+    animation: slideInRight var(--duration-medium) var(--ease-decelerate) forwards;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .task-category {
+        padding: var(--spacing-lg);
+        border-radius: 20px;
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .category-title {
+        font-size: 1.3rem;
+    }
+    
+    .empty-state {
+        padding: var(--spacing-xl) var(--spacing-md);
+    }
+    
+    .add-task-btn {
+        padding: var(--spacing-sm) var(--spacing-lg);
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .task-category {
+        padding: var(--spacing-md);
+        border-radius: 16px;
+    }
+    
+    .category-header {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        align-items: flex-start;
+    }
+    
+    .category-title {
+        font-size: 1.2rem;
+    }
+}
+
+/* Future category specific styling */
+.task-category.future-category.active {
+    background: linear-gradient(
+        135deg,
+        rgba(139, 92, 246, 0.12) 0%,
+        rgba(255, 255, 255, 0.95) 30%,
+        rgba(139, 92, 246, 0.08) 100%
+    );
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.task-category.future-category .category-title {
+    background: linear-gradient(
+        135deg,
+        #8b5cf6 0%,
+        rgba(139, 92, 246, 0.8) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Ultrawide screen optimizations */
+@media (min-width: 1440px) {
+    .task-category {
+        padding: var(--spacing-xxl);
+    }
+    
+    .category-title {
+        font-size: 1.6rem;
+    }
+}
+
+@media (min-width: 1600px) {
+    .dual-panel-layout .task-category {
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(255, 255, 255, 0.85) 50%,
+            rgba(var(--accent-rgb), 0.1) 100%
+        );
+        backdrop-filter: blur(25px);
+        border-radius: 28px;
+    }
+}
+
+/* Ensure consistent flush top alignment for both containers */
+.dual-panel-layout .task-category {
+    margin-top: 0;
+    padding-top: var(--spacing-xl);
+}
+
+.dual-panel-layout .task-category .category-header {
+    margin-top: 0;
+}

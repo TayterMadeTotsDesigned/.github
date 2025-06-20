@@ -52,32 +52,87 @@ const UIRenderer = {
 
     createTaskElement(task) {
         const template = document.getElementById("task-item-template");
-        const clone = template.content.cloneNode(true);
-        const taskElement = clone.querySelector(".task-item");
+        if (template) {
+            // Use template if available
+            const clone = template.content.cloneNode(true);
+            const taskElement = clone.querySelector(".task-item");
 
-        taskElement.dataset.taskId = task.id;
-        taskElement.querySelector(".task-title").textContent = task.name;
-        
-        // Handle task description with fallback text
-        const descriptionElement = taskElement.querySelector(".task-description");
-        if (task.description && task.description.trim()) {
-            descriptionElement.textContent = task.description;
-            descriptionElement.style.fontStyle = "normal";
+            taskElement.dataset.taskId = task.id;
+            taskElement.querySelector(".task-title").textContent = task.name;
+            
+            // Handle task description with fallback text
+            const descriptionElement = taskElement.querySelector(".task-description");
+            if (task.description && task.description.trim()) {
+                descriptionElement.textContent = task.description;
+                descriptionElement.style.fontStyle = "normal";
+            } else {
+                descriptionElement.textContent = "No description provided";
+                descriptionElement.style.fontStyle = "italic";
+                descriptionElement.style.opacity = "0.6";
+            }
+
+            if (task.completed) {
+                taskElement.classList.add("completed");
+                taskElement.querySelector(".task-checkbox").classList.add("checked");
+            }
+
+            // Add event listeners
+            this.addTaskEventListeners(taskElement);
+
+            return taskElement;
         } else {
-            descriptionElement.textContent = "No description provided";
-            descriptionElement.style.fontStyle = "italic";
-            descriptionElement.style.opacity = "0.6";
+            // Fallback: create element manually
+            return this.createTaskElementManually(task);
         }
+    },
 
-        if (task.completed) {
-            taskElement.classList.add("completed");
-            taskElement.querySelector(".task-checkbox").classList.add("checked");
-        }
+    createTaskElementManually(task) {
+        const taskItem = document.createElement('li');
+        taskItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+        taskItem.dataset.taskId = task.id;
+
+        const isVirtualRecurring = task.isVirtualRecurring;
+        const displayClass = isVirtualRecurring ? 'recurring-task' : '';
+
+        taskItem.innerHTML = `
+            <div class="task-content">
+                <button class="task-checkbox ${task.completed ? 'checked' : ''}" aria-label="Mark as complete">
+                    <span class="checkbox-icon"></span>
+                </button>
+                <div class="task-details">
+                    <h4 class="task-title ${displayClass}">
+                        ${isVirtualRecurring ? '↻ ' : ''}${this.escapeHtml(task.name)}
+                    </h4>
+                    <p class="task-description" style="font-style: ${task.description ? 'normal' : 'italic'}; opacity: ${task.description ? '1' : '0.6'};">
+                        ${this.escapeHtml(task.description) || 'No description provided'}
+                    </p>
+                    <div class="task-meta">
+                        <span class="task-time">${this.formatTaskTime(task)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="task-actions">
+                <button class="task-edit-btn" aria-label="Edit task">✏️</button>
+                <button class="task-delete-btn" aria-label="Delete task">🗑️</button>
+            </div>
+        `;
 
         // Add event listeners
-        this.addTaskEventListeners(taskElement);
+        this.addTaskEventListeners(taskItem);
 
-        return taskElement;
+        return taskItem;
+    },
+
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+
+    formatTaskTime(task) {
+        if (!task.dueDate) return '';
+        return formatDate(task.dueDate);
     },
 
     addTaskEventListeners(taskElement) {
@@ -147,11 +202,18 @@ const UIRenderer = {
     },
     
     renderFutureTasks(tasks) {
-        // For now, just update the count - calendar rendering can be added later
-        const futureCount = document.querySelector('#future-section .task-count');
-        if (futureCount) {
-            futureCount.textContent = `${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'}`;
+        // For the future category, always show the calendar, never an empty state
+        // The future section always displays the calendar view (week or month)
+        
+        // Update the task count for future tasks
+        const futureCountElement = document.getElementById('future-count');
+        if (futureCountElement) {
+            futureCountElement.textContent = `${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'}`;
         }
+        
+        // Note: The actual calendar rendering is handled by the TaskRenderer module
+        // through the EventHandler's renderCurrentCalendarView() method
+        console.log(`Future tasks updated: ${tasks.length} tasks`);
     },
 
     openEditModal(taskId) {
@@ -171,3 +233,4 @@ const UIRenderer = {
 };
 
 export { UIRenderer };
+export default UIRenderer;

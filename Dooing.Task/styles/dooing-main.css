@@ -220,31 +220,55 @@ body {
 }
 
 .arrow-btn {
-    background: transparent;
-    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(var(--accent-rgb), 0.1);
     cursor: pointer;
-    padding: var(--spacing-xs);
-    border-radius: var(--border-radius);
-    transition: all 0.15s ease;
+    padding: 12px;
+    border-radius: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    position: relative;
+    overflow: hidden;
+}
+
+.arrow-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.arrow-btn:hover::before {
+    opacity: 0.1;
 }
 
 .arrow-btn:hover {
-    background: var(--accent, #006d77);
-    transform: translateY(-1px);
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.25);
+}
+
+.arrow-btn:active {
+    transform: translateY(-1px) scale(0.98);
 }
 
 .arrow-btn img {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
-    transition: filter 0.15s ease;
+    transition: all 0.3s ease;
 }
 
 .arrow-btn:hover img {
     filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(103%) contrast(103%);
+    transform: scale(1.1);
 }
 
 label[for="theme-toggle"] {
@@ -277,22 +301,52 @@ label[for="theme-toggle"] {
 }
 
 .new-task-btn {
-    background: var(--accent, #006d77);
+    background: linear-gradient(135deg, var(--accent) 0%, rgba(var(--accent-rgb), 0.8) 100%);
     border: none;
-    border-radius: var(--border-radius);
-    padding: var(--spacing-xs);
+    border-radius: 16px;
+    padding: 12px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: var(--spacing-sm);
+    margin-left: 16px;
+    box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.new-task-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.new-task-btn:hover::before {
+    opacity: 1;
+}
+
+.new-task-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.4);
+}
+
+.new-task-btn:active {
+    transform: translateY(0) scale(0.98);
 }
 
 .new-task-btn img {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(103%) contrast(103%);
+    transition: transform 0.3s ease;
+}
+
+.new-task-btn:hover img {
+    transform: scale(1.1);
 }
 
 .header-right {
@@ -578,24 +632,52 @@ label[for="theme-toggle"] {
 .view-toggle {
     background: transparent;
     border: none;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: calc(var(--border-radius) - 2px);
+    padding: 12px 16px;
+    border-radius: 16px;
     cursor: pointer;
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text);
-    transition: all 0.15s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    overflow: hidden;
+    letter-spacing: 0.3px;
+}
+
+.view-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.view-toggle:hover::before {
+    left: 100%;
 }
 
 .view-toggle.active {
-    background: var(--accent);
+    background: linear-gradient(135deg, var(--accent) 0%, rgba(var(--accent-rgb), 0.8) 100%);
     color: white;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.3);
+    transform: translateY(-2px);
+}
+
+.view-toggle.active::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
 }
 
 .view-toggle:hover:not(.active) {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(var(--accent-rgb), 0.1);
+    transform: translateY(-1px);
+    color: var(--accent);
+}
+
+.view-toggle:active {
+    transform: translateY(0) scale(0.98);
 }
 
 @media (max-width: 768px) {
@@ -982,40 +1064,74 @@ label[for="theme-toggle"] {
 
 .task-actions {
     display: flex;
-    gap: var(--spacing-xs);
-    align-items: flex-start;
+    gap: 8px;
+    align-items: center;
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transform: translateX(10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .task-item:hover .task-actions {
     opacity: 1;
+    transform: translateX(0);
 }
 
 .task-edit-btn,
 .task-delete-btn {
-    background: transparent;
-    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     cursor: pointer;
-    padding: var(--spacing-xs);
-    border-radius: var(--border-radius);
-    font-size: 1rem;
-    transition: all 0.15s ease;
+    padding: 8px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    position: relative;
+    overflow: hidden;
+}
+
+.task-edit-btn::before,
+.task-delete-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.task-edit-btn:hover::before {
+    opacity: 0.1;
+}
+
+.task-delete-btn:hover::before {
+    background: linear-gradient(135deg, #ef4444, transparent);
+    opacity: 0.1;
 }
 
 .task-edit-btn:hover {
-    background: rgba(59, 130, 246, 0.1);
-    transform: scale(1.1);
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.2);
 }
 
 .task-delete-btn:hover {
-    background: rgba(239, 68, 68, 0.1);
-    transform: scale(1.1);
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.2);
+}
+
+.task-edit-btn:active,
+.task-delete-btn:active {
+    transform: scale(0.95);
 }
 
 .task-item[data-priority="high"] {
@@ -1217,21 +1333,44 @@ label[for="theme-toggle"] {
 .modal-header button {
     background: rgba(255, 255, 255, 0.2);
     border: none;
-    border-radius: 8px;
-    width: 32px;
-    height: 32px;
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
     font-size: 18px;
     cursor: pointer;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-header button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.modal-header button:hover::before {
+    left: 100%;
 }
 
 .modal-header button:hover {
     background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+.modal-header button:active {
+    transform: scale(0.95) rotate(90deg);
 }
 
 .task-form {
@@ -1509,30 +1648,79 @@ label[for="theme-toggle"] {
 .form-actions {
     display: flex;
     justify-content: flex-end;
-    padding: 24px 32px 32px 32px;
-    background: #fafafa;
-    border-top: 1px solid #f0f0f0;
+    gap: 16px;
+    padding: 32px;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.9) 0%, 
+        rgba(var(--accent-rgb), 0.02) 100%);
+    border-top: 1px solid rgba(var(--accent-rgb), 0.1);
     margin: 0 -32px -32px -32px;
+    backdrop-filter: blur(10px);
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, rgba(var(--accent-rgb), 0.8) 100%);
     color: white;
     border: none;
     padding: 16px 32px;
-    border-radius: 12px;
+    border-radius: 16px;
     cursor: pointer;
     font-weight: 600;
     font-size: 1rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.3);
+    text-transform: none;
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
+    min-width: 120px;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
 }
 
 .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(var(--accent-rgb), 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text);
+    border: 2px solid rgba(var(--accent-rgb), 0.2);
+    padding: 14px 28px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    letter-spacing: 0.3px;
+    min-width: 120px;
+}
+
+.btn-secondary:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.25);
 }
 
 .btn-primary:active {
@@ -1811,28 +1999,65 @@ label[for="theme-toggle"] {
 /* View toggle buttons */
 .future-controls {
     display: flex;
-    gap: var(--spacing-xs);
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 6px;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--accent-rgb), 0.1);
 }
 
 .view-toggle {
     background: transparent;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--border-radius);
+    border: none;
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 16px;
     cursor: pointer;
     font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.3px;
+    min-width: 80px;
 }
 
-.view-toggle:hover {
+.view-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.view-toggle:hover::before {
+    left: 100%;
+}
+
+.view-toggle:hover:not(.active) {
     background: rgba(var(--accent-rgb), 0.1);
+    transform: translateY(-1px);
+    color: var(--accent);
 }
 
 .view-toggle.active {
-    background: var(--accent);
+    background: linear-gradient(135deg, var(--accent) 0%, rgba(var(--accent-rgb), 0.8) 100%);
     color: white;
+    box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.3);
+    transform: translateY(-2px);
+}
+
+.view-toggle.active::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.view-toggle:active {
+    transform: translateY(0) scale(0.98);
 }
 
 /* Task context menu styling */
@@ -1850,250 +2075,182 @@ label[for="theme-toggle"] {
 .task-context-menu button {
     display: block;
     width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: 16px 20px;
     border: none;
-    background: none;
+    background: transparent;
     text-align: left;
     cursor: pointer;
     font-size: 0.9rem;
+    font-weight: 500;
     color: var(--text);
-    transition: background-color 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.3px;
+}
+
+.task-context-menu button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.task-context-menu button:hover::before {
+    left: 100%;
 }
 
 .task-context-menu button:hover {
-    background: rgba(var(--accent-rgb), 0.1);
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.1) 0%, rgba(var(--accent-rgb), 0.05) 100%);
+    color: var(--accent);
+    transform: translateX(8px);
+    font-weight: 600;
+}
+
+.task-context-menu button:active {
+    transform: translateX(4px) scale(0.98);
 }
 
 .task-context-menu button:not(:last-child) {
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-/* Responsive design */
-@media (max-width: 1200px) {
-    .calendar-container {
-        height: calc(100vh - 250px);
-        max-height: 500px;
-    }
+/* Section containers for non-task pages */
+.sections-container {
+    display: none;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
 }
 
-@media (max-width: 768px) {
-    .calendar-container {
-        height: calc(100vh - 200px);
-        max-height: 450px;
-        padding: var(--spacing-sm);
-    }
-    
-    .calendar-header {
-        margin: calc(-1 * var(--spacing-sm)) calc(-1 * var(--spacing-sm)) var(--spacing-sm) calc(-1 * var(--spacing-sm));
-        padding: var(--spacing-xs) var(--spacing-sm);
-    }
-    
-    .calendar-title {
-        font-size: 1rem;
-    }
-    
-    .calendar-nav {
-        width: 32px;
-        height: 32px;
-        font-size: 0.9rem;
-    }
-    
-    .week-grid {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-xs);
-    }
-    
-    .week-day {
-        min-height: 60px;
-        padding: var(--spacing-xs);
-    }
-    
-    .day-name {
-        font-size: 0.65rem;
-    }
-    
-    .day-number {
-        font-size: 0.9rem;
-    }
-    
-    .month-day {
-        padding: 2px;
-    }
-    
-    .month-day .day-number {
-        font-size: 0.7rem;
-        margin-bottom: 2px;
-    }
-    
-    .month-day-names .day-name {
-        font-size: 0.65rem;
-        padding: var(--spacing-xs);
-    }
-    
-    .calendar-task {
-        font-size: 0.6rem;
-        padding: 1px 3px;
-    }
-}
-
-@media (max-width: 480px) {
-    .calendar-container {
-        height: calc(100vh - 150px);
-        max-height: 400px;
-        min-height: 300px;
-    }
-    
-    .week-day {
-        min-height: 50px;
-    }
-    
-    .day-header {
-        margin-bottom: 2px;
-        padding-bottom: 2px;
-    }
-    
-    .calendar-task {
-        font-size: 0.55rem;
-        padding: 1px 2px;
-    }
-    
-    .month-day .day-number {
-        font-size: 0.65rem;
-    }
-    
-    /* Stack week view vertically on very small screens */
-    .week-grid {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-xs);
-    }
-    
-    .week-day {
-        flex-direction: row;
-        min-height: auto;
-        padding: var(--spacing-xs);
-    }
-    
-    .day-header {
-        flex-direction: row;
-        align-items: center;
-        gap: var(--spacing-xs);
-        margin-bottom: 0;
-        padding-bottom: 0;
-        border-bottom: none;
-        margin-right: var(--spacing-sm);
-        flex-shrink: 0;
-    }
-    
-    .day-tasks {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 2px;
-        overflow: visible;
-    }
-}
-
-/* Future category specific styling */
-.future-category {
-    height: calc(100vh - 200px);
-    max-height: none;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.future-category .category-header {
-    flex-shrink: 0;
-}
-
-.future-category .future-intro {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: var(--spacing-md) var(--spacing-lg);
+.section-page {
     background: var(--card-bg);
-    border-radius: var(--border-radius);
-    margin-bottom: var(--spacing-md);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
 }
 
-.future-category .future-intro .empty-icon {
-    margin-bottom: var(--spacing-sm);
-}
-
-.future-category .future-intro .empty-icon img {
-    width: 48px;
-    height: 48px;
-    opacity: 0.8;
-}
-
-.future-category .future-intro .empty-title {
+.section-page h2 {
     color: var(--accent);
-    font-size: 1.25rem;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    font-size: 2rem;
+    font-weight: 600;
 }
 
-.future-category .future-intro .empty-message {
-    color: var(--text-muted);
-    font-size: 0.95rem;
+.section-page h3 {
+    color: var(--text);
     margin-bottom: var(--spacing-md);
+    font-size: 1.5rem;
+    font-weight: 500;
 }
 
-.future-category .future-intro .add-task-btn {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.2s ease;
+.section-page p, .section-page li {
+    margin-bottom: var(--spacing-md);
+    line-height: 1.7;
+    color: var(--text);
 }
 
-.future-category .future-intro .add-task-btn:hover {
-    background: color-mix(in srgb, var(--accent) 85%, black);
+/* Pomodoro section within task category styling */
+.pomodoro-content {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
 }
 
-/* Ensure calendar containers take full available space */
-.future-category .calendar-container {
-    flex: 1;
-    margin-top: 0;
-    height: auto;
-    max-height: none;
+.pomodoro-content h2 {
+    text-align: center;
+    color: var(--text);
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    font-weight: 400;
 }
 
-@media (max-width: 768px) {
-    .future-category {
-        height: calc(100vh - 150px);
-    }
+/* Two-column layout for Today and Pomodoro */
+.main-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
 }
 
-@media (max-width: 480px) {
-    .future-category {
-        height: calc(100vh - 120px);
-    }
+.dual-panel-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
 }
 
-/* Recurring task styles */
-.calendar-task.recurring-task {
-    background: linear-gradient(45deg, var(--accent) 0%, #9C27B0 100%);
+/* Override the task-categories-container positioning for the Today section */
+.dual-panel-layout .today-category {
+    opacity: 1;
+    visibility: visible;
     position: relative;
-    border-left: 3px solid #E91E63;
+    transform: translateX(0);
+    grid-column: 1;
+    grid-row: 1;
 }
 
-.calendar-task.recurring-task::before {
-    content: '↻';
-    position: absolute;
-    right: 2px;
-    top: 0;
-    font-size: 0.5rem;
-    opacity: 0.8;
+/* Styles for the Pomodoro section in the dual layout */
+.dual-panel-layout .pomodoro-container {
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-md);
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: 70vh;
 }
 
-.calendar-task.recurring-task:hover {
-    background: linear-gradient(45deg, var(--accent) 0%, #9C27B0 100%);
-    filter: brightness(1.2);
-    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+.dual-panel-layout .pomodoro-container .pomodoro-content {
+    overflow-y: auto;
+    padding-right: var(--spacing-sm);
+}
+
+.dual-panel-layout .today-category {
+    min-height: 500px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Scrollbar styling for pomodoro container */
+.pomodoro-container::-webkit-scrollbar,
+.today-category::-webkit-scrollbar {
+    width: 8px;
+}
+
+.pomodoro-container::-webkit-scrollbar-track,
+.today-category::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+.pomodoro-container::-webkit-scrollbar-thumb,
+.today-category::-webkit-scrollbar-thumb {
+    background-color: var(--accent);
+    border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .dual-panel-layout {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .dual-panel-layout .today-category,
+    .dual-panel-layout .pomodoro-container {
+        max-height: none;
+    }
 }

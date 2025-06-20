@@ -216,6 +216,11 @@ const TaskManager = {
         return this.getTasksByDateCategory(category);
     },
     
+    getTasksForCategory(category) {
+        // Use the existing date-based categorization method
+        return this.getTasksByDateCategory(category);
+    },
+    
     updateTask(updatedTask) {
         const index = this.tasks.findIndex(t => String(t.id) === String(updatedTask.id));
         if (index !== -1) {

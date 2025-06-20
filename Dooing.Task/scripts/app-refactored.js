@@ -35,10 +35,14 @@ class DooingTaskApp {
             
             // Initialize Pomodoro Timer
             this.pomodoroTimer = new PomodoroTimer();
+            this.pomodoroTimer.initializeSettingsUI();
             window.pomodoroTimer = this.pomodoroTimer; // Global access for callbacks
             
             // Set up module integrations
             this.setupModuleIntegrations();
+            
+            // Set up debug functionality (development only)
+            this.setupDebugHandlers();
             
             // Render initial UI
             this.renderInitialUI();
@@ -110,20 +114,26 @@ class DooingTaskApp {
      */
     setupSidebarHandlers() {
         // Sidebar toggle
-        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const hamburgerBtn = document.querySelector('.sidebar');
         const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        const closeBtn = document.querySelector('.sidebar-close');
         
         hamburgerBtn?.addEventListener('click', () => {
-            sidebar?.classList.toggle('active');
+            sidebar?.classList.add('active');
+            backdrop?.classList.add('active');
         });
 
-        // Close sidebar on outside click
-        document.addEventListener('click', (e) => {
-            if (sidebar?.classList.contains('active') && 
-                !sidebar.contains(e.target) && 
-                !hamburgerBtn?.contains(e.target)) {
-                sidebar.classList.remove('active');
-            }
+        // Close sidebar on close button click
+        closeBtn?.addEventListener('click', () => {
+            sidebar?.classList.remove('active');
+            backdrop?.classList.remove('active');
+        });
+
+        // Close sidebar on backdrop click
+        backdrop?.addEventListener('click', () => {
+            sidebar?.classList.remove('active');
+            backdrop?.classList.remove('active');
         });
 
         // Sidebar navigation
@@ -133,15 +143,29 @@ class DooingTaskApp {
                 e.preventDefault();
                 const target = link.getAttribute('href').substring(1);
                 
-                if (target === 'settings') {
-                    this.showSettings();
-                } else if (target === 'help') {
-                    this.showHelp();
-                } else if (['today', 'tomorrow', 'future'].includes(target)) {
-                    this.modules.eventHandler.showCategory(target);
-                    sidebar?.classList.remove('active');
-                }
+                // Use the new showSection method that handles both task categories and other sections
+                this.modules.eventHandler.showSection(target);
+                
+                // Close sidebar
+                sidebar?.classList.remove('active');
+                backdrop?.classList.remove('active');
             });
+        });
+
+        // Sidebar action buttons
+        const settingsBtn = document.getElementById('settings-btn');
+        const helpBtn = document.getElementById('help-btn');
+        
+        settingsBtn?.addEventListener('click', () => {
+            this.modules.eventHandler.showSection('settings');
+            sidebar?.classList.remove('active');
+            backdrop?.classList.remove('active');
+        });
+        
+        helpBtn?.addEventListener('click', () => {
+            this.modules.eventHandler.showSection('help');
+            sidebar?.classList.remove('active');
+            backdrop?.classList.remove('active');
         });
     }
 
@@ -152,8 +176,8 @@ class DooingTaskApp {
         // Render task lists
         UIRenderer.renderTaskLists();
         
-        // Show default category
-        this.modules.eventHandler.showCategory('today');
+        // Initialize UI state through EventHandler
+        this.modules.eventHandler.renderInitialUI();
         
         // Render calendar if in future view
         this.modules.eventHandler.renderCurrentCalendarView();
@@ -199,6 +223,48 @@ class DooingTaskApp {
         // Implementation for help view
         console.log('Help requested');
         // Could open a help modal or navigate to help page
+    }
+
+    /**
+     * Add debug functionality
+     */
+    setupDebugHandlers() {
+        // Add global debugging access
+        window.debugApp = {
+            app: this,
+            taskManager: TaskManager,
+            modules: this.modules,
+            getStatus: () => this.getAppStatus(),
+            testAddTask: () => {
+                const testTask = {
+                    id: Date.now().toString(),
+                    name: 'Test Task',
+                    description: 'This is a test task',
+                    dueDate: new Date().toISOString(),
+                    completed: false,
+                    recurrence: { enabled: false }
+                };
+                TaskManager.addTask(testTask);
+                this.modules.eventHandler.refreshUI();
+                console.log('Test task added:', testTask);
+            }
+        };
+        
+        // Log initialization status
+        console.log('🔧 Debug handlers set up. Access via window.debugApp');
+    }
+
+    /**
+     * Debug function to check current application state
+     */
+    getAppStatus() {
+        return {
+            isInitialized: this.isInitialized,
+            currentCategory: this.modules.eventHandler?.currentCategory,
+            sidebarVisible: document.querySelector('.sidebar-menu')?.classList.contains('active'),
+            taskContainerVisible: window.getComputedStyle(document.querySelector('.task-categories-container'))?.display !== 'none',
+            sectionsContainerVisible: window.getComputedStyle(document.querySelector('.sections-container'))?.display !== 'none'
+        };
     }
 
     /**

@@ -1,6 +1,7 @@
 // EventHandler.js - Centralized event handling with delegation
 import TaskManager from '../taskManager.js';
 import { UIRenderer } from '../UI_Renderer.js';
+import { generateId } from '../utils.js';
 
 class EventHandler {
     constructor(modalManager, calendarManager, taskRenderer) {
@@ -8,7 +9,7 @@ class EventHandler {
         this.calendarManager = calendarManager;
         this.taskRenderer = taskRenderer;
         this.currentCategory = 'today';
-        this.categories = ['today', 'tomorrow', 'future'];
+        this.categories = ['today', 'tomorrow', 'future', 'pomodoro'];
     }
 
     /**
@@ -20,6 +21,9 @@ class EventHandler {
         this.setupCalendarHandlers();
         this.setupNavigationHandlers();
         this.setupKeyboardHandlers();
+        
+        // Make showSection globally available for backwards compatibility
+        window.showSection = (sectionId) => this.showSection(sectionId);
     }
 
     /**
@@ -371,28 +375,82 @@ class EventHandler {
         const formData = this.modalManager.getFormData();
         const context = this.modalManager.getCurrentContext();
         
-        if (context?.mode === 'edit') {
-            // Update existing task
-            const success = TaskManager.updateTask(context.task.id, formData);
-            if (success) {
-                this.refreshUI();
-                this.modalManager.close();
+        try {
+            if (context?.mode === 'edit') {
+                this.updateExistingTask(formData, context.task);
             } else {
-                alert('Failed to update task. Please try again.');
+                this.createNewTask(formData);
             }
-        } else {
-            // Create new task
-            const task = TaskManager.addTask(formData);
-            if (task) {
-                this.refreshUI();
-                this.modalManager.close();
-                
-                // Show success feedback
-                this.showNotification(`Task "${task.name}" created successfully!`);
-            } else {
-                alert('Failed to create task. Please try again.');
-            }
+            
+            this.modalManager.close();
+            this.refreshUI();
+            
+        } catch (error) {
+            console.error('Form submission error:', error);
+            this.showNotification('Failed to save task. Please try again.', 'error');
         }
+    }
+
+    /**
+     * Create a new task from form data
+     */
+    createNewTask(formData) {
+        const task = {
+            id: this.generateTaskId(),
+            name: formData.name.trim(),
+            description: formData.description?.trim() || '',
+            completed: false,
+            createdAt: new Date().toISOString(),
+            recurrence: formData.recurrence
+        };
+
+        // Set due date based on category
+        if (formData.category === 'today') {
+            task.dueDate = new Date().toISOString();
+        } else if (formData.category === 'tomorrow') {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            task.dueDate = tomorrow.toISOString();
+        } else if (formData.category === 'future' && formData.date) {
+            task.dueDate = new Date(formData.date).toISOString();
+        }
+
+        TaskManager.addTask(task);
+        this.showNotification(`Task "${task.name}" created successfully!`);
+    }
+
+    /**
+     * Update an existing task
+     */
+    updateExistingTask(formData, originalTask) {
+        const updatedTask = {
+            ...originalTask,
+            name: formData.name.trim(),
+            description: formData.description?.trim() || '',
+            recurrence: formData.recurrence,
+            updatedAt: new Date().toISOString()
+        };
+
+        // Update due date based on category
+        if (formData.category === 'today') {
+            updatedTask.dueDate = new Date().toISOString();
+        } else if (formData.category === 'tomorrow') {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            updatedTask.dueDate = tomorrow.toISOString();
+        } else if (formData.category === 'future' && formData.date) {
+            updatedTask.dueDate = new Date(formData.date).toISOString();
+        }
+
+        TaskManager.updateTask(updatedTask);
+        this.showNotification(`Task "${updatedTask.name}" updated successfully!`);
+    }
+
+    /**
+     * Generate a unique task ID
+     */
+    generateTaskId() {
+        return generateId();
     }
 
     // Navigation methods
@@ -416,18 +474,91 @@ class EventHandler {
 
         this.currentCategory = category;
 
-        // Update category display
-        const categories = document.querySelectorAll('.task-category');
-        categories.forEach(cat => cat.classList.remove('active'));
+        // Get main layout elements
+        const taskCategories = document.querySelectorAll('.task-categories-container .task-category');
+        const sections = document.querySelectorAll('.section-page');
+        const taskContainer = document.querySelector('.task-categories-container');
+        const dualPanel = document.querySelector('.dual-panel-layout');
+        const sectionsContainer = document.querySelector('.sections-container');
         
-        const targetCategory = document.getElementById(`${category}-section`);
-        targetCategory?.classList.add('active');
+        // Hide all regular task categories
+        taskCategories.forEach(cat => cat.classList.remove('active'));
+        
+        // Hide all section pages
+        sections.forEach(section => section.style.display = 'none');
+        
+        // Always keep dual panel visible, just hide task-categories-container when not needed
+        if (dualPanel) dualPanel.style.display = 'grid';
+        
+        if (category === 'today') {
+            // When today is selected, hide other categories and show dual panel
+            if (taskContainer) taskContainer.style.display = 'none';
+            if (sectionsContainer) sectionsContainer.style.display = 'none';
+        } else if (category === 'pomodoro') {
+            // For pomodoro, just show the dual panel (it's already visible)
+            if (taskContainer) taskContainer.style.display = 'none';
+            if (sectionsContainer) sectionsContainer.style.display = 'none';
+        } else {
+            // For tomorrow and future, show task-categories-container
+            if (taskContainer) taskContainer.style.display = 'block';
+            if (sectionsContainer) sectionsContainer.style.display = 'none';
+            
+            // Activate the correct category
+            const targetCategory = document.getElementById(`${category}-section`);
+            if (targetCategory) targetCategory.classList.add('active');
+        }
 
         // Update navigation indicators
         this.updateCategoryIndicators();
         
         // Update header text or other UI elements
         this.updateCategoryHeader(category);
+    }
+
+    /**
+     * Show a specific section (including non-task sections)
+     */
+    showSection(sectionId) {
+        // Map task-list to today for compatibility
+        if (sectionId === 'task-list') {
+            sectionId = 'today';
+        }
+        
+        // If it's a task category
+        if (this.categories.includes(sectionId)) {
+            this.showCategory(sectionId);
+        } else {
+            // It's a regular section
+            // Hide all task categories and other sections
+            const taskCategories = document.querySelectorAll('.task-category');
+            const sections = document.querySelectorAll('.section-page');
+            const taskContainer = document.querySelector('.task-categories-container');
+            const dualPanel = document.querySelector('.dual-panel-layout');
+            const sectionsContainer = document.querySelector('.sections-container');
+            
+            taskCategories.forEach(cat => cat.classList.remove('active'));
+            sections.forEach(section => section.style.display = 'none');
+            
+            // Hide dual panel layout and task categories
+            if (dualPanel) dualPanel.style.display = 'none';
+            if (taskContainer) taskContainer.style.display = 'none';
+            
+            // Show sections container
+            if (sectionsContainer) sectionsContainer.style.display = 'block';
+            
+            // Show the specific section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+            
+            // Update category indicators if needed
+            const indicators = document.querySelectorAll('.category-dot');
+            indicators.forEach(dot => dot.classList.remove('active'));
+            
+            // Update header
+            this.updateCategoryHeader(sectionId);
+        }
     }
 
     /**
@@ -445,14 +576,29 @@ class EventHandler {
      * Update category header
      */
     updateCategoryHeader(category) {
+        // Update hero category title
+        const heroCategory = document.getElementById('hero-category');
         const headerTitle = document.querySelector('.header-title');
+        
+        const titles = {
+            today: 'Today',
+            tomorrow: 'Tomorrow', 
+            future: 'Future',
+            pomodoro: 'Pomodoro Timer',
+            settings: 'Settings',
+            help: 'Help & Tutorial',
+            about: 'About Dooing.Task',
+            contact: 'Contact Us',
+            inspo: 'Get Inspired'
+        };
+        
+        const title = titles[category] || category;
+        
+        if (heroCategory) {
+            heroCategory.textContent = title;
+        }
         if (headerTitle) {
-            const titles = {
-                today: 'Today',
-                tomorrow: 'Tomorrow', 
-                future: 'Future'
-            };
-            headerTitle.textContent = titles[category] || category;
+            headerTitle.textContent = title;
         }
     }
 
@@ -486,6 +632,23 @@ class EventHandler {
 
         weekBtn?.classList.toggle('active', view === 'week');
         monthBtn?.classList.toggle('active', view === 'month');
+    }
+
+    /**
+     * Render initial UI state
+     */
+    renderInitialUI() {
+        // Ensure containers are in the correct initial state
+        const taskContainer = document.querySelector('.task-categories-container');
+        const sectionsContainer = document.querySelector('.sections-container');
+        const dualPanel = document.querySelector('.dual-panel-layout');
+        
+        if (taskContainer) taskContainer.style.display = 'none';
+        if (sectionsContainer) sectionsContainer.style.display = 'none';
+        if (dualPanel) dualPanel.style.display = 'grid';
+        
+        // Show default category
+        this.showCategory('today');
     }
 
     // Utility methods
